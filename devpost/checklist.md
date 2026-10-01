@@ -31,7 +31,7 @@ Build order: shown to the team as the six build steps in the game plan; approved
   Learner check: In the screenshot, can you tell in two seconds which trial needs attention first?
   Commit: `Add countdown timeline and money-at-risk banner`
 
-- [ ] **3. Smart reading with NVIDIA-hosted AI**
+- [x] **3. Smart reading with NVIDIA-hosted AI**
   Becomes usable: With `NVIDIA_API_KEY` in `.env`, messy real emails are read by the AI; without it, or if the AI fails, the built-in reader takes over and the page says "Basic reading mode".
   Why now: It's the riskiest part (an external service Claude can't reach from its workspace), so it is built and tested against a stand-in before the polish work.
   PRD ref: `prd.md > Finding trials in emails`, `prd.md > States and Boundaries` (Smart reading unavailable, Privacy)

@@ -118,10 +118,14 @@ async function findTrials() {
       return;
     }
     trials = result.trials.map((trial) => ({ ...trial, status: 'active' }));
+    const skipped = result.ignoredCount
+      ? ` ${result.ignoredCount} email${result.ignoredCount === 1 ? " didn't" : "s didn't"} look like a free trial.`
+      : '';
+    const note = result.note ? ` ${result.note}` : '';
     if (!trials.length) {
-      showMessage("We couldn't find a free trial in that text. Try pasting the whole email, including the dates.", true);
+      showMessage(`We couldn't find a free trial in that text. Try pasting the whole email, including the dates.${skipped}`, true);
     } else {
-      showMessage(`Found ${trials.length} trial${trials.length === 1 ? '' : 's'}.`);
+      showMessage(`Found ${trials.length} trial${trials.length === 1 ? '' : 's'}.${skipped}${note}`);
     }
     render();
   } catch {
