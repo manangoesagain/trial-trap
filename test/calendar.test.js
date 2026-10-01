@@ -42,7 +42,7 @@ test('calendar file is valid: escaped text, short lines, alarm included', () => 
   assert.ok(lines.every((line) => new TextEncoder().encode(line).length <= 75), 'no line longer than 75 bytes');
   const unfolded = ics.replace(/\r\n /g, '');
   assert.match(unfolded, /SUMMARY:Cancel StreamBox Plus trial: charges \$15\.99 tomorrow/);
-  assert.match(unfolded, /then choose "Cancel plan"\; it takes a minute\./);
+  assert.ok(unfolded.includes('then choose "Cancel plan"\\; it takes a minute.'), 'semicolons are escaped');
   assert.match(unfolded, /Membership\\, then/);
   assert.doesNotMatch(unfolded.replace(/\r\n/g, ''), /\n/, 'newlines inside text are escaped');
 });
@@ -53,4 +53,14 @@ test('works when the email had no price or cancel steps', () => {
   assert.equal(title, 'Cancel StreamBox Plus trial: charges you tomorrow');
   assert.match(description, /didn't say how to cancel/);
   assert.doesNotMatch(buildIcs(plain, today), /^URL:/m);
+});
+
+test('a reminder for today is never set for a time that has passed', () => {
+  const soon = { ...trial, chargeDate: '2026-10-02' };
+  const evening = new Date(2026, 9, 1, 20, 0);
+  assert.equal(new URL(googleCalendarUrl(soon, today, evening)).searchParams.get('dates'), '20261001T201500/20261001T203000');
+  assert.match(buildIcs(soon, today, evening), /DTSTART:20261001T201500/);
+  const early = new Date(2026, 9, 1, 7, 30);
+  assert.equal(new URL(googleCalendarUrl(soon, today, early)).searchParams.get('dates'), '20261001T090000/20261001T091500');
+  assert.equal(new URL(googleCalendarUrl(trial, today, evening)).searchParams.get('dates'), '20261002T090000/20261002T091500', 'tomorrow stays at 9:00');
 });

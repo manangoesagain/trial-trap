@@ -66,3 +66,8 @@ test('cancelled trials count as saved money, not money at risk', () => {
   assert.deepEqual(summary.saved, { USD: 15.99 });
   assert.equal(summary.next.service, 'MunchPass');
 });
+
+test('cancelling a trial that already charged saves nothing', () => {
+  const late = { ...streambox, status: 'cancelled', cancelledInTime: false };
+  assert.deepEqual(summarize([late], '2026-10-05').saved, {});
+});

@@ -1,6 +1,7 @@
 // Calendar reminders for a trial: a Google Calendar link and a standard .ics file
 // for Apple Calendar and Outlook. The reminder is at 9:00 AM the day before the charge
-// (or today, if that day has already passed), in the user's own time zone.
+// (or today, if that day has already passed), in the user's own time zone. If that
+// time has already gone by today, it's set for the next quarter hour instead.
 
 import { addDays, daysBetween, formatDate } from './dates.js';
 import { formatMoney } from './trials.js';
@@ -30,20 +31,33 @@ export function reminderText(trial, today) {
 }
 
 const compact = (iso) => iso.replaceAll('-', '');
+const pad = (number) => String(number).padStart(2, '0');
 
-export function googleCalendarUrl(trial, today) {
+// Start and end of the 15-minute reminder, as calendar times like "20261002T090000".
+export function reminderTimes(day, today, now = new Date()) {
+  let minutes = 9 * 60;
+  if (day === today) {
+    const soon = Math.ceil((now.getHours() * 60 + now.getMinutes() + 1) / 15) * 15;
+    minutes = Math.min(Math.max(minutes, soon), 23 * 60 + 45);
+  }
+  const time = (total) => `${compact(day)}T${pad(Math.floor(total / 60))}${pad(total % 60)}00`;
+  return { start: time(minutes), end: time(Math.min(minutes + 15, 23 * 60 + 59)) };
+}
+
+export function googleCalendarUrl(trial, today, now = new Date()) {
   const { day, title, description } = reminderText(trial, today);
+  const { start, end } = reminderTimes(day, today, now);
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: title,
-    dates: `${compact(day)}T090000/${compact(day)}T091500`,
+    dates: `${start}/${end}`,
     details: description,
   });
   return `https://calendar.google.com/calendar/render?${params}`;
 }
 
 function escapeText(text) {
-  return text.replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  return text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
 }
 
 // Calendar files must not have lines longer than 75 bytes; longer ones continue
@@ -74,6 +88,7 @@ function utcStamp(date) {
 
 export function buildIcs(trial, today, now = new Date()) {
   const { day, title, description } = reminderText(trial, today);
+  const { start, end } = reminderTimes(day, today, now);
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -83,8 +98,8 @@ export function buildIcs(trial, today, now = new Date()) {
     'BEGIN:VEVENT',
     `UID:${trial.id}@trial-trap`,
     `DTSTAMP:${utcStamp(now)}`,
-    `DTSTART:${compact(day)}T090000`,
-    `DTEND:${compact(day)}T091500`,
+    `DTSTART:${start}`,
+    `DTEND:${end}`,
     `SUMMARY:${escapeText(title)}`,
     `DESCRIPTION:${escapeText(description)}`,
     ...(trial.cancelUrl ? [`URL:${trial.cancelUrl}`] : []),

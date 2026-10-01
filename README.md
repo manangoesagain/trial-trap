@@ -6,10 +6,10 @@ Paste your free-trial signup emails to see which trials are about to charge you,
 
 ## What it does
 
-- Finds free trials in pasted emails. You can paste one email or several, with a line containing `---` between them.
+- Finds free trials in pasted emails. You can paste one email or several. A line with `---` between emails helps, but emails copied straight from Gmail or Outlook are also recognised.
 - Shows a card for each trial with a countdown ("in 2 days"), the charge date and the price after the trial. The cards are sorted by charge date and coloured red within 3 days, amber within 14 days and green after that.
 - Adds up the **money at risk** from trials that haven't charged yet.
-- **Add to calendar** gives you a Google Calendar link or a `.ics` file for Apple Calendar and Outlook. The reminder is set for 9:00 AM the day before the charge.
+- **Add to calendar** gives you a Google Calendar link or a `.ics` file for Apple Calendar and Outlook. The reminder is set for 9:00 AM the day before the charge. If that time has already passed, it's set for the next quarter hour.
 - **How to cancel** shows the cancel steps and link from the email, if the email has them.
 - **I cancelled it ✓** moves a trial to the Cancelled list and counts it as money saved. **×** removes a trial that was read wrongly. Both have an **Undo** button.
 - Remembers your trials in the browser between visits, with no account and no database. Pasting the same email twice won't add the trial twice.
@@ -39,9 +39,9 @@ Without an API key, Trial Trap uses its **built-in reader**, which looks for pat
 1. Get a free API key at [build.nvidia.com](https://build.nvidia.com). Keys start with `nvapi-`.
 2. Open `.env` in a text editor and paste your key after `NVIDIA_API_KEY=`.
 3. You can also set `AI_MODEL` to any chat model listed on build.nvidia.com. The default is `meta/llama-3.3-70b-instruct`.
-4. Run `npm start` again. The terminal will say whether smart reading is on and whether NVIDIA found your model. If it didn't, it suggests similar model names.
+4. Run `npm start` again. The terminal says whether smart reading is on. It also sends NVIDIA one tiny test message to check that your key can use the model. If something is wrong, it says what, and suggests similar model names when the model isn't found.
 
-`.env` is listed in `.gitignore`, so your key stays on your computer. Only the local server uses the key, and it is never sent to the browser.
+`.env` is listed in `.gitignore`, so your key stays on your computer. Only the local server uses the key, and it is never sent to the browser. If `NVIDIA_API_KEY` is also set in your Windows settings, the one in `.env` wins.
 
 ## How it works
 
@@ -62,7 +62,8 @@ saved in localStorage
 | `server.js` | Serves the page and the `/api/extract` endpoint, and loads settings from `.env` |
 | `lib/aiExtract.js` | Asks the NVIDIA-hosted model to read the emails. It requests a fixed JSON shape and stops waiting after 20 seconds |
 | `lib/basicExtract.js` | The built-in reader, which needs no AI |
-| `lib/splitEmails.js` | Splits pasted text into separate emails |
+| `lib/splitEmails.js` | Splits pasted text into separate emails, keeping forwarded emails in one piece |
+| `lib/readDates.js` | Reads dates written the ways emails write them, for both readers |
 | `lib/validateTrials.js` | Checks and cleans every trial from either reader (real dates, sensible prices, only `http(s)` links) |
 | `public/index.html`, `public/styles.css`, `public/app.js` | The page |
 | `public/calendar.js` | Builds the Google Calendar link and the `.ics` file |
@@ -75,6 +76,7 @@ saved in localStorage
 
 - When smart reading is on, the pasted text is sent to NVIDIA's API to be read. When it's off, the text never leaves your computer.
 - Trials are saved only in your browser's `localStorage`. The server stores nothing.
+- The server only answers on your own computer (`127.0.0.1`), so other people on the same Wi-Fi can't open it or use your NVIDIA key.
 - Everything taken from an email is displayed as plain text, never as HTML. Links are used only if they start with `http://` or `https://`.
 - The AI is told to treat the emails as data and ignore any instructions written inside them. Its answer must also fit the trial format, or it is thrown away.
 
@@ -91,6 +93,7 @@ This runs the tests with Node's built-in test runner. They cover both readers, t
 - The sample emails are dated relative to today. Pasting them again on a different day adds new cards.
 - Trials are saved per browser. Another browser or device starts empty.
 - The built-in reader handles common English email wording. Numeric dates like `04/10/2026` are read day-first when the email uses ₹, €, £, INR, EUR or GBP, and month-first otherwise.
+- When an email gives a price without a currency, the price is shown without one rather than guessed.
 
 ## How it was planned
 

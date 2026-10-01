@@ -96,9 +96,11 @@ function markCancelled(id) {
   const trial = findTrial(id);
   if (!trial) return;
   trial.status = 'cancelled';
+  // Money only counts as saved if the trial hadn't charged yet.
+  trial.cancelledInTime = !trial.chargeDate || trial.chargeDate >= todayISO();
   persist();
   render();
-  const saved = trial.price === null ? '' : ` That's ${formatMoney(trial.price, trial.currency)} saved.`;
+  const saved = trial.price === null || !trial.cancelledInTime ? '' : ` That's ${formatMoney(trial.price, trial.currency)} saved.`;
   showToast(`Nice! ${trial.service} is marked as cancelled.${saved}`, () => markActive(id));
   focusAfterChange();
 }
@@ -208,7 +210,9 @@ function renderCancelledCard(trial) {
   top.append(element('h3', 'service', trial.service), labels);
 
   const price = priceText(trial);
-  const note = element('p', 'price', price ? `You won't pay ${price}` : 'No charge coming from this one');
+  let noteText = price ? `You won't pay ${price}` : 'No charge coming from this one';
+  if (trial.cancelledInTime === false) noteText = 'Cancelled after it charged, so check your bank';
+  const note = element('p', 'price', noteText);
 
   const actions = element('div', 'card-actions');
   const undo = element('button', 'button soft small', 'Undo');
@@ -226,15 +230,19 @@ function renderCalendarMenu(trial, today) {
   const summary = element('summary', 'button small', '📅 Add to calendar');
   const options = element('div', 'menu-options');
 
+  // The reminder is worked out when clicked, so it's right even if the page was left open.
   const google = element('a', 'menu-option', 'Google Calendar');
   google.href = googleCalendarUrl(trial, today);
   google.target = '_blank';
   google.rel = 'noopener noreferrer';
+  google.addEventListener('click', () => {
+    google.href = googleCalendarUrl(trial, todayISO());
+  });
 
   const file = element('button', 'menu-option', 'Apple / Outlook (download)');
   file.type = 'button';
   file.addEventListener('click', () => {
-    const blob = new Blob([buildIcs(trial, today)], { type: 'text/calendar;charset=utf-8' });
+    const blob = new Blob([buildIcs(trial, todayISO())], { type: 'text/calendar;charset=utf-8' });
     const link = element('a');
     link.href = URL.createObjectURL(blob);
     link.download = icsFileName(trial);
@@ -386,6 +394,19 @@ toast.addEventListener('mouseenter', () => clearTimeout(toastTimer));
 toast.addEventListener('focusin', () => clearTimeout(toastTimer));
 toast.addEventListener('mouseleave', () => { if (toast.classList.contains('show')) startToastTimer(); });
 toast.addEventListener('focusout', () => { if (toast.classList.contains('show')) startToastTimer(); });
+
+// Countdowns move on: redraw after midnight, and whenever the page is looked at again.
+let shownDay = todayISO();
+function redrawIfNewDay() {
+  if (todayISO() === shownDay) return;
+  shownDay = todayISO();
+  render();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') redrawIfNewDay();
+});
+window.addEventListener('focus', redrawIfNewDay);
+setInterval(redrawIfNewDay, 60 * 1000);
 
 findButton.addEventListener('click', findTrials);
 clearButton.addEventListener('click', clearAll);
