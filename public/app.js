@@ -59,6 +59,8 @@ function persist() {
 
 function hideToast() {
   clearTimeout(toastTimer);
+  // Don't leave keyboard focus on a button that's about to disappear.
+  if (toast.contains(document.activeElement)) trialList.focus({ preventScroll: true });
   toast.classList.remove('show');
   toastText.textContent = '';
   toastUndo.hidden = true;
@@ -72,7 +74,18 @@ function showToast(text, undo) {
   toastUndoAction = undo;
   toastUndo.hidden = !undo;
   toast.classList.add('show');
+  startToastTimer();
+}
+
+function startToastTimer() {
+  clearTimeout(toastTimer);
   toastTimer = setTimeout(hideToast, TOAST_SECONDS * 1000);
+}
+
+// The card you clicked on was just redrawn, so put keyboard focus somewhere sensible.
+function focusAfterChange() {
+  if (!toastUndo.hidden) toastUndo.focus({ preventScroll: true });
+  else if (!document.activeElement || document.activeElement === document.body) trialList.focus({ preventScroll: true });
 }
 
 function findTrial(id) {
@@ -87,6 +100,7 @@ function markCancelled(id) {
   render();
   const saved = trial.price === null ? '' : ` That's ${formatMoney(trial.price, trial.currency)} saved.`;
   showToast(`Nice! ${trial.service} is marked as cancelled.${saved}`, () => markActive(id));
+  focusAfterChange();
 }
 
 function markActive(id) {
@@ -96,6 +110,7 @@ function markActive(id) {
   persist();
   render();
   hideToast();
+  focusAfterChange();
 }
 
 function removeTrial(id) {
@@ -110,6 +125,7 @@ function removeTrial(id) {
     render();
     hideToast();
   });
+  focusAfterChange();
 }
 
 function clearAll() {
@@ -121,6 +137,7 @@ function clearAll() {
   render();
   hideToast();
   showMessage('All trials cleared.');
+  emailText.focus({ preventScroll: true });
 }
 
 function removeButton(trial) {
@@ -350,12 +367,25 @@ async function findTrials() {
   }
 }
 
-// Close an open calendar menu when clicking anywhere else.
+// Close an open calendar menu when clicking anywhere else, or pressing Escape.
 document.addEventListener('click', (event) => {
   for (const menu of document.querySelectorAll('.calendar-menu[open]')) {
     if (!menu.contains(event.target)) menu.open = false;
   }
 });
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  for (const menu of document.querySelectorAll('.calendar-menu[open]')) {
+    menu.open = false;
+    if (menu.contains(document.activeElement)) menu.querySelector('summary').focus();
+  }
+});
+
+// Keep the Undo note on screen while someone is pointing at it or tabbed into it.
+toast.addEventListener('mouseenter', () => clearTimeout(toastTimer));
+toast.addEventListener('focusin', () => clearTimeout(toastTimer));
+toast.addEventListener('mouseleave', () => { if (toast.classList.contains('show')) startToastTimer(); });
+toast.addEventListener('focusout', () => { if (toast.classList.contains('show')) startToastTimer(); });
 
 findButton.addEventListener('click', findTrials);
 clearButton.addEventListener('click', clearAll);

@@ -129,7 +129,7 @@ textarea:focus { outline: none; border-color: var(--accent); }
   border-left: 8px solid var(--line);
 }
 .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.service { margin: 0; font-size: 1.25rem; font-weight: 800; }
+.service { margin: 0; font-size: 1.25rem; font-weight: 800; min-width: 0; overflow-wrap: anywhere; }
 .badge { font-size: 0.8rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
 .countdown { margin: 6px 0 0; font-size: 1.05rem; }
 .countdown strong { font-weight: 800; }
@@ -224,6 +224,17 @@ a.button { display: inline-block; text-decoration: none; }
 .card.cancelled .badge { background: var(--later-soft); color: #0f5f2c; }
 
 .list-footer { margin-top: 20px; text-align: center; }
+.trial-list:focus { outline: none; }
+
+.footer {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 16px 96px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.footer p { margin: 2px 0; }
 .link-button {
   font: inherit;
   font-weight: 600;
@@ -283,8 +294,8 @@ a.button { display: inline-block; text-decoration: none; }
   .page { padding-top: 20px; }
   .logo { font-size: 2rem; }
   .steps { grid-template-columns: 1fr; gap: 8px; }
-  .steps li { display: flex; align-items: center; gap: 10px; text-align: left; }
-  .step-icon { display: inline; }
+  .steps li { text-align: left; }
+  .step-icon { display: inline; margin-right: 8px; }
   .banner-amount { font-size: 2.1rem; }
   .actions .button { flex: 1 1 auto; }
   .toast { bottom: 16px; width: calc(100% - 32px); justify-content: space-between; }

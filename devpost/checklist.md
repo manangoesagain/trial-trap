@@ -61,7 +61,7 @@ Build order: shown to the team as the six build steps in the game plan; approved
   Learner check: Cancel one trial, refresh the page, and paste the samples again: is everything where you expect?
   Commit: `Remember trials, add cancel and remove with undo`
 
-- [ ] **6. Polish and README**
+- [x] **6. Polish and README**
   Becomes usable: Looks finished on a laptop and a phone, has a how-it-works strip and footer notes, and the README explains what it is and how to run it on Windows, with a screenshot.
   Why now: Design is a judging criterion and the tie-breaker; the README is what judges see in the repo.
   PRD ref: `prd.md > Look and Feel`, `prd.md > Screens and Layout`
@@ -97,3 +97,4 @@ Activity mode:
 - Badge for 4–14 days says "Within 2 weeks" instead of "This month" — the window is 14 days, so "This month" would be wrong when it crosses into the next month.
 - Added `public/trials.js` (duplicate key, sorting, totals, money formatting) alongside `public/dates.js` — the server and the page both need these, so they live in one shared file instead of inside `storage.js` and `app.js`.
 - "How to cancel" opens a full-width panel under the card's buttons instead of a dropdown, so it never sits on top of the calendar menu; the calendar menu closes when you click elsewhere.
+- "Clear all trials" sits just under the trial list and only shows when there are trials, rather than in the page footer, so it is next to the things it removes.
