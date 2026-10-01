@@ -86,7 +86,7 @@ From `scope.md > Inspiration & Identity`: a calm friend tapping you on the shoul
 - **Smart reading unavailable:** if AI reading isn't set up or fails, the app still finds trials with its built-in reader and shows a small note: "Basic reading mode, results may be less accurate."
 - **Past charge date:** shows "Charged [date], check your bank" in grey and isn't counted in the banner.
 - **All clear:** if every trial is cancelled or past, the banner says "You're all clear 🎉".
-- **Privacy:** when AI reading is on, pasted text is sent to Claude (Anthropic) to be read and isn't kept by Trial Trap; trials are saved only in this browser. The note on the page says exactly this and recommends removing anything sensitive before pasting.
+- **Privacy:** when AI reading is on, pasted text is sent to an AI model hosted by NVIDIA to be read and isn't kept by Trial Trap; trials are saved only in this browser. The note on the page says exactly this and recommends removing anything sensitive before pasting.
 - **Persistence:** saved only in this browser on this device; nothing is stored on a server.
 
 ## Product Decisions
@@ -120,4 +120,4 @@ Everything in **Features and Behavior** and **States and Boundaries** above: pas
 - **A mobile app:** the web page works in a phone browser.
 
 ## Open Questions
-- Whose Anthropic API key powers smart reading for the demo video? *Not blocking: the app is built and tested with the built-in reader first, and smart reading switches on when a key is added.*
+- Resolved: smart reading uses the team's NVIDIA (build.nvidia.com) key. The app still works without it using the built-in reader.
