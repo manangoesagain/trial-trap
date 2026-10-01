@@ -43,10 +43,10 @@
 
     <section id="trial-list" class="trial-list" aria-label="Your trials" tabindex="-1"></section>
 
-    <section id="cancelled-section" class="cancelled-section" aria-labelledby="cancelled-title" hidden>
-      <h2 id="cancelled-title" class="section-title"></h2>
+    <details id="cancelled-section" class="cancelled-section" hidden>
+      <summary class="section-summary"><h2 id="cancelled-title" class="section-title"></h2></summary>
       <div id="cancelled-list" class="trial-list"></div>
-    </section>
+    </details>
 
     <div id="list-footer" class="list-footer" hidden>
       <button id="clear-button" class="link-button" type="button">Clear all trials</button>

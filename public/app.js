@@ -260,7 +260,9 @@ function renderCancelInfo(trial) {
   const body = element('div', 'cancel-body');
   body.id = `cancel-${trial.id}`;
   body.hidden = true;
-  const button = element('button', 'button small soft', 'How to cancel');
+  // The card says up front when the email had no cancel steps or link.
+  const found = trial.cancelSteps.length > 0 || Boolean(trial.cancelUrl);
+  const button = element('button', 'button small soft', found ? 'How to cancel' : 'How to cancel (not in email)');
   button.type = 'button';
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-controls', body.id);

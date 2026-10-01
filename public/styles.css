@@ -217,8 +217,10 @@ a.button { display: inline-block; text-decoration: none; }
 .remove-button:focus-visible, .link-button:focus-visible, .toast-undo:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 .cancelled-section { margin-top: 28px; }
-.section-title { font-size: 1.05rem; margin: 0 0 10px; color: var(--muted); }
-.cancelled-section .trial-list { margin-top: 0; }
+.section-summary { cursor: pointer; padding: 6px 0; border-radius: 8px; color: var(--muted); }
+.section-summary:hover .section-title { color: var(--ink); }
+.section-title { display: inline; font-size: 1.05rem; margin: 0; color: var(--muted); }
+.cancelled-section .trial-list { margin-top: 10px; }
 .card.cancelled { border-left-color: var(--past); background: #fbfbfa; box-shadow: none; border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .card.cancelled .service { color: var(--past); text-decoration: line-through; text-decoration-thickness: 2px; }
 .card.cancelled .badge { background: var(--later-soft); color: #0f5f2c; }
