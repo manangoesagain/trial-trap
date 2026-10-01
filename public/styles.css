@@ -1,0 +1,5 @@
+body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+.page { max-width: 720px; margin: 0 auto; }
+textarea { width: 100%; box-sizing: border-box; }
+.card { border: 1px solid #ccc; border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

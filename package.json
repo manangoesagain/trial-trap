@@ -1,0 +1,19 @@
+{
+  "name": "trial-trap",
+  "version": "1.0.0",
+  "description": "Paste your free-trial signup emails and see every trial that's about to charge you, when, how much, and how to cancel.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "zod": "^4.6.5"
+  }
+}

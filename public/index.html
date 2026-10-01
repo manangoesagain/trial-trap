@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trial Trap</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <h1>Trial Trap 🪤</h1>
+      <p class="tagline">Never pay for a trial you forgot.</p>
+    </header>
+
+    <section class="paste" aria-labelledby="paste-title">
+      <h2 id="paste-title" class="visually-hidden">Paste your trial emails</h2>
+      <textarea id="email-text" rows="10" placeholder="Paste one or more trial emails here…" aria-label="Trial emails"></textarea>
+      <div class="actions">
+        <button id="find-button" class="button primary" type="button">Find my trials</button>
+        <button id="sample-button" class="button secondary" type="button">Try sample emails</button>
+      </div>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="trial-list" class="trial-list" aria-label="Your trials"></section>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
