@@ -42,7 +42,21 @@
     </section>
 
     <section id="trial-list" class="trial-list" aria-label="Your trials"></section>
+
+    <section id="cancelled-section" class="cancelled-section" aria-labelledby="cancelled-title" hidden>
+      <h2 id="cancelled-title" class="section-title"></h2>
+      <div id="cancelled-list" class="trial-list"></div>
+    </section>
+
+    <div id="list-footer" class="list-footer" hidden>
+      <button id="clear-button" class="link-button" type="button">Clear all trials</button>
+    </div>
   </main>
+
+  <div id="toast" class="toast">
+    <span id="toast-text" role="status" aria-live="polite"></span>
+    <button id="toast-undo" class="toast-undo" type="button" hidden>Undo</button>
+  </div>
   <script type="module" src="app.js"></script>
 </body>
 </html>

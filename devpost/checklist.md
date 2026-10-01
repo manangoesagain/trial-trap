@@ -51,7 +51,7 @@ Build order: shown to the team as the six build steps in the game plan; approved
   Learner check: Click **Add to calendar → Google Calendar** on the red card and confirm the event shows up the day before the charge.
   Commit: `Add calendar reminders and cancel steps`
 
-- [ ] **5. Cancel, remove, remember**
+- [x] **5. Cancel, remove, remember**
   Becomes usable: **I cancelled it ✓** with Undo and a "saved" total, **Remove** with Undo, trials saved between visits, no duplicates when pasting again, **Clear all**, and friendly empty, nothing-found, past and all-clear states.
   Why now: Makes it a tool you can keep using rather than a one-shot demo, and protects trust when a reading is wrong.
   PRD ref: `prd.md > Marking as cancelled`, `prd.md > Fixing mistakes`, `prd.md > Remembering trials`, `prd.md > States and Boundaries`

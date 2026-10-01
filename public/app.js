@@ -4,6 +4,7 @@
 import { buildIcs, googleCalendarUrl, icsFileName } from './calendar.js';
 import { countdownText, daysBetween, formatDate, todayISO, urgency } from './dates.js';
 import { sampleEmails } from './samples.js';
+import { loadTrials, mergeTrials, saveTrials } from './storage.js';
 import { formatMoney, formatTotals, sortTrials, summarize } from './trials.js';
 
 const emailText = document.querySelector('#email-text');
@@ -15,10 +16,22 @@ const banner = document.querySelector('#banner');
 const bannerLabel = document.querySelector('#banner-label');
 const bannerAmount = document.querySelector('#banner-amount');
 const bannerNext = document.querySelector('#banner-next');
+const cancelledSection = document.querySelector('#cancelled-section');
+const cancelledTitle = document.querySelector('#cancelled-title');
+const cancelledList = document.querySelector('#cancelled-list');
+const listFooter = document.querySelector('#list-footer');
+const clearButton = document.querySelector('#clear-button');
+const toast = document.querySelector('#toast');
+const toastText = document.querySelector('#toast-text');
+const toastUndo = document.querySelector('#toast-undo');
 
 const BADGES = { soon: 'Soon', month: 'Within 2 weeks', later: 'Later', past: 'Charged', none: 'No date' };
+const TOAST_SECONDS = 6;
 
-let trials = [];
+let trials = loadTrials();
+let warnedAboutStorage = false;
+let toastTimer = null;
+let toastUndoAction = null;
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -30,6 +43,93 @@ function element(tag, className, text) {
 function showMessage(text, isError = false) {
   message.textContent = text;
   message.classList.toggle('error', isError);
+}
+
+const STORAGE_WARNING = "This browser won't let Trial Trap save, so your trials will be gone when you close the page.";
+
+// Saves the list and returns whether it worked. The warning is shown once per visit.
+function persist() {
+  const saved = saveTrials(trials);
+  if (!saved && !warnedAboutStorage) {
+    warnedAboutStorage = true;
+    showMessage(STORAGE_WARNING, true);
+  }
+  return saved;
+}
+
+function hideToast() {
+  clearTimeout(toastTimer);
+  toast.classList.remove('show');
+  toastText.textContent = '';
+  toastUndo.hidden = true;
+  toastUndoAction = null;
+}
+
+// A short note at the bottom of the screen, with an Undo button for a few seconds.
+function showToast(text, undo) {
+  hideToast();
+  toastText.textContent = text;
+  toastUndoAction = undo;
+  toastUndo.hidden = !undo;
+  toast.classList.add('show');
+  toastTimer = setTimeout(hideToast, TOAST_SECONDS * 1000);
+}
+
+function findTrial(id) {
+  return trials.find((trial) => trial.id === id);
+}
+
+function markCancelled(id) {
+  const trial = findTrial(id);
+  if (!trial) return;
+  trial.status = 'cancelled';
+  persist();
+  render();
+  const saved = trial.price === null ? '' : ` That's ${formatMoney(trial.price, trial.currency)} saved.`;
+  showToast(`Nice! ${trial.service} is marked as cancelled.${saved}`, () => markActive(id));
+}
+
+function markActive(id) {
+  const trial = findTrial(id);
+  if (!trial) return;
+  trial.status = 'active';
+  persist();
+  render();
+  hideToast();
+}
+
+function removeTrial(id) {
+  const index = trials.findIndex((trial) => trial.id === id);
+  if (index === -1) return;
+  const [removed] = trials.splice(index, 1);
+  persist();
+  render();
+  showToast(`Removed ${removed.service}.`, () => {
+    if (!findTrial(removed.id)) trials.splice(Math.min(index, trials.length), 0, removed);
+    persist();
+    render();
+    hideToast();
+  });
+}
+
+function clearAll() {
+  const count = trials.length;
+  if (!count) return;
+  if (!window.confirm(`Remove all ${count} trial${count === 1 ? '' : 's'} saved in this browser? This can't be undone.`)) return;
+  trials = [];
+  persist();
+  render();
+  hideToast();
+  showMessage('All trials cleared.');
+}
+
+function removeButton(trial) {
+  const button = element('button', 'remove-button', '×');
+  button.type = 'button';
+  button.title = 'Remove (if it was read wrongly)';
+  button.setAttribute('aria-label', `Remove ${trial.service}`);
+  button.addEventListener('click', () => removeTrial(trial.id));
+  return button;
 }
 
 function priceText(trial) {
@@ -49,7 +149,9 @@ function renderCard(trial, today) {
   card.dataset.id = trial.id;
 
   const top = element('div', 'card-top');
-  top.append(element('h3', 'service', trial.service), element('span', 'badge', BADGES[level]));
+  const labels = element('div', 'card-labels');
+  labels.append(element('span', 'badge', BADGES[level]), removeButton(trial));
+  top.append(element('h3', 'service', trial.service), labels);
 
   const countdown = element('p', 'countdown');
   if (days === null) {
@@ -69,9 +171,36 @@ function renderCard(trial, today) {
   const actions = element('div', 'card-actions');
   if (days !== null && days >= 0) actions.append(renderCalendarMenu(trial, today));
   const cancelInfo = renderCancelInfo(trial);
-  actions.append(cancelInfo.button);
+  const cancelledButton = element('button', 'button primary small', 'I cancelled it ✓');
+  cancelledButton.type = 'button';
+  cancelledButton.setAttribute('aria-label', `I cancelled ${trial.service}`);
+  cancelledButton.addEventListener('click', () => markCancelled(trial.id));
+  actions.append(cancelInfo.button, cancelledButton);
 
   card.append(top, countdown, priceLine, actions, cancelInfo.body);
+  return card;
+}
+
+function renderCancelledCard(trial) {
+  const card = element('article', 'card cancelled');
+  card.dataset.id = trial.id;
+
+  const top = element('div', 'card-top');
+  const labels = element('div', 'card-labels');
+  labels.append(element('span', 'badge', 'Cancelled ✓'), removeButton(trial));
+  top.append(element('h3', 'service', trial.service), labels);
+
+  const price = priceText(trial);
+  const note = element('p', 'price', price ? `You won't pay ${price}` : 'No charge coming from this one');
+
+  const actions = element('div', 'card-actions');
+  const undo = element('button', 'button soft small', 'Undo');
+  undo.type = 'button';
+  undo.setAttribute('aria-label', `Undo: ${trial.service} isn't cancelled yet`);
+  undo.addEventListener('click', () => markActive(trial.id));
+  actions.append(undo);
+
+  card.append(top, note, actions);
   return card;
 }
 
@@ -138,13 +267,17 @@ function renderBanner(today) {
     return;
   }
   banner.hidden = false;
-  const { atRisk, next } = summarize(trials, today);
+  const { atRisk, saved, next } = summarize(trials, today);
   banner.classList.toggle('clear', !next);
 
   if (!next) {
+    const undated = trials.some((trial) => trial.status !== 'cancelled' && !trial.chargeDate);
+    const savedText = Object.keys(saved).length ? ` You've saved ${formatTotals(saved)} so far.` : '';
     bannerLabel.textContent = 'All good';
     bannerAmount.textContent = "You're all clear 🎉";
-    bannerNext.textContent = 'No trials are about to charge you.';
+    bannerNext.textContent = (undated
+      ? 'No dated charges are coming up. Check any trial below that has no date.'
+      : 'No trials are about to charge you.') + savedText;
     return;
   }
   bannerLabel.textContent = 'Money at risk';
@@ -156,8 +289,19 @@ function renderBanner(today) {
 
 function render() {
   const today = todayISO();
+  const active = trials.filter((trial) => trial.status !== 'cancelled');
+  const cancelled = trials.filter((trial) => trial.status === 'cancelled');
+
   renderBanner(today);
-  trialList.replaceChildren(...sortTrials(trials).map((trial) => renderCard(trial, today)));
+  trialList.replaceChildren(...sortTrials(active).map((trial) => renderCard(trial, today)));
+
+  cancelledSection.hidden = !cancelled.length;
+  const { saved } = summarize(trials, today);
+  const savedText = Object.keys(saved).length ? ` · ${formatTotals(saved)} saved` : '';
+  cancelledTitle.textContent = `Cancelled (${cancelled.length})${savedText}`;
+  cancelledList.replaceChildren(...sortTrials(cancelled).map(renderCancelledCard));
+
+  listFooter.hidden = !trials.length;
 }
 
 async function findTrials() {
@@ -180,17 +324,24 @@ async function findTrials() {
       showMessage(result.error, true);
       return;
     }
-    trials = result.trials.map((trial) => ({ ...trial, status: 'active' }));
     const skipped = result.ignoredCount
       ? ` ${result.ignoredCount} email${result.ignoredCount === 1 ? " didn't" : "s didn't"} look like a free trial.`
       : '';
     const note = result.note ? ` ${result.note}` : '';
-    if (!trials.length) {
+    if (!result.trials.length) {
       showMessage(`We couldn't find a free trial in that text. Try pasting the whole email, including the dates.${skipped}`, true);
-    } else {
-      showMessage(`Found ${trials.length} trial${trials.length === 1 ? '' : 's'}.${skipped}${note}`);
+      return;
     }
+    const merged = mergeTrials(trials, result.trials);
+    trials = merged.trials;
+    const saved = persist();
     render();
+    const found = result.trials.length;
+    let summary;
+    if (!merged.added) summary = found === 1 ? 'That trial is already on your list.' : 'Those trials are already on your list.';
+    else if (merged.alreadySaved) summary = `Found ${found} trials: ${merged.added} new, ${merged.alreadySaved} already on your list.`;
+    else summary = `Found ${found} trial${found === 1 ? '' : 's'}.`;
+    showMessage(`${summary}${skipped}${note}${saved ? '' : ` ${STORAGE_WARNING}`}`, !saved);
   } catch {
     showMessage("Couldn't reach Trial Trap. Is the server still running?", true);
   } finally {
@@ -207,9 +358,13 @@ document.addEventListener('click', (event) => {
 });
 
 findButton.addEventListener('click', findTrials);
+clearButton.addEventListener('click', clearAll);
+toastUndo.addEventListener('click', () => toastUndoAction?.());
 sampleButton.addEventListener('click', () => {
   emailText.value = sampleEmails(todayISO());
   emailText.setSelectionRange(0, 0);
   emailText.focus();
   emailText.scrollTop = 0;
 });
+
+render();
