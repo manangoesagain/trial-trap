@@ -148,6 +148,58 @@ textarea:focus { outline: none; border-color: var(--accent); }
 .urgency-past .badge, .urgency-none .badge { background: var(--past-soft); color: #4b5563; }
 .urgency-past .service, .urgency-past .countdown { color: var(--past); }
 
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: flex-start; }
+.button.small { font-size: 0.9rem; padding: 6px 14px; }
+.menu { position: relative; }
+.menu > summary {
+  list-style: none;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  display: inline-block;
+  user-select: none;
+}
+.menu > summary::-webkit-details-marker { display: none; }
+.menu > summary:hover { border-color: var(--accent); }
+.menu[open] > summary { border-color: var(--accent); }
+.menu-options {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 230px;
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(31, 41, 51, 0.18);
+  padding: 6px;
+  display: grid;
+}
+.menu-option {
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.menu-option:hover { background: var(--accent-soft); }
+.button.soft { background: var(--accent-soft); color: var(--accent-dark); }
+.button.soft:hover, .button.soft[aria-expanded="true"] { border-color: var(--accent); }
+.cancel-body {
+  margin-top: 10px;
+  background: #fffdf9;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.cancel-body p { margin: 0 0 8px; }
+.cancel-steps { margin: 0 0 10px; padding-left: 1.2em; }
+.cancel-steps li { margin: 2px 0; }
+a.button { display: inline-block; text-decoration: none; }
+
 .visually-hidden {
   position: absolute;
   width: 1px;

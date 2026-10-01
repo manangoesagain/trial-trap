@@ -1,6 +1,7 @@
 // Page logic: sends the pasted emails to the helper server and draws the trials.
 // Everything that came from an email is shown with textContent, never as HTML.
 
+import { buildIcs, googleCalendarUrl, icsFileName } from './calendar.js';
 import { countdownText, daysBetween, formatDate, todayISO, urgency } from './dates.js';
 import { sampleEmails } from './samples.js';
 import { formatMoney, formatTotals, sortTrials, summarize } from './trials.js';
@@ -65,8 +66,70 @@ function renderCard(trial, today) {
     ? element('p', 'price', `then ${price}`)
     : element('p', 'price not-found', 'Price not in email');
 
-  card.append(top, countdown, priceLine);
+  const actions = element('div', 'card-actions');
+  if (days !== null && days >= 0) actions.append(renderCalendarMenu(trial, today));
+  const cancelInfo = renderCancelInfo(trial);
+  actions.append(cancelInfo.button);
+
+  card.append(top, countdown, priceLine, actions, cancelInfo.body);
   return card;
+}
+
+function renderCalendarMenu(trial, today) {
+  const menu = element('details', 'menu calendar-menu');
+  const summary = element('summary', 'button small', '📅 Add to calendar');
+  const options = element('div', 'menu-options');
+
+  const google = element('a', 'menu-option', 'Google Calendar');
+  google.href = googleCalendarUrl(trial, today);
+  google.target = '_blank';
+  google.rel = 'noopener noreferrer';
+
+  const file = element('button', 'menu-option', 'Apple / Outlook (download)');
+  file.type = 'button';
+  file.addEventListener('click', () => {
+    const blob = new Blob([buildIcs(trial, today)], { type: 'text/calendar;charset=utf-8' });
+    const link = element('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = icsFileName(trial);
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    menu.open = false;
+  });
+
+  options.append(google, file);
+  menu.append(summary, options);
+  return menu;
+}
+
+function renderCancelInfo(trial) {
+  const body = element('div', 'cancel-body');
+  body.id = `cancel-${trial.id}`;
+  body.hidden = true;
+  const button = element('button', 'button small soft', 'How to cancel');
+  button.type = 'button';
+  button.setAttribute('aria-expanded', 'false');
+  button.setAttribute('aria-controls', body.id);
+  button.addEventListener('click', () => {
+    body.hidden = !body.hidden;
+    button.setAttribute('aria-expanded', String(!body.hidden));
+  });
+
+  if (trial.cancelSteps.length) {
+    const steps = element('ol', 'cancel-steps');
+    steps.append(...trial.cancelSteps.map((step) => element('li', null, step)));
+    body.append(steps);
+  } else {
+    body.append(element('p', 'not-found', `The email didn't say how to cancel. Look under Account or Subscription settings on ${trial.service}'s website.`));
+  }
+  if (trial.cancelUrl) {
+    const link = element('a', 'button primary small', 'Open cancel page ↗');
+    link.href = trial.cancelUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    body.append(link);
+  }
+  return { button, body };
 }
 
 function renderBanner(today) {
@@ -135,6 +198,13 @@ async function findTrials() {
     findButton.textContent = 'Find my trials';
   }
 }
+
+// Close an open calendar menu when clicking anywhere else.
+document.addEventListener('click', (event) => {
+  for (const menu of document.querySelectorAll('.calendar-menu[open]')) {
+    if (!menu.contains(event.target)) menu.open = false;
+  }
+});
 
 findButton.addEventListener('click', findTrials);
 sampleButton.addEventListener('click', () => {

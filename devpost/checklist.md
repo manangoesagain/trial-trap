@@ -41,7 +41,7 @@ Build order: shown to the team as the six build steps in the game plan; approved
   Learner check: At the first laptop checkpoint, put your NVIDIA key in `.env`, restart, paste a real trial email, and confirm the terminal says smart reading is on and the card is right.
   Commit: `Add smart reading with NVIDIA-hosted AI and fallback`
 
-- [ ] **4. Add to calendar and how to cancel**
+- [x] **4. Add to calendar and how to cancel**
   Becomes usable: Each card has **Add to calendar** (Google Calendar link, plus an Apple/Outlook file) and **How to cancel** with the steps and cancel link.
   Why now: Turning "when" into a reminder and "how" into steps is the second half of the kernel.
   PRD ref: `prd.md > Calendar reminder`, `prd.md > How to cancel`
@@ -96,3 +96,4 @@ Activity mode:
 
 - Badge for 4–14 days says "Within 2 weeks" instead of "This month" — the window is 14 days, so "This month" would be wrong when it crosses into the next month.
 - Added `public/trials.js` (duplicate key, sorting, totals, money formatting) alongside `public/dates.js` — the server and the page both need these, so they live in one shared file instead of inside `storage.js` and `app.js`.
+- "How to cancel" opens a full-width panel under the card's buttons instead of a dropdown, so it never sits on top of the calendar menu; the calendar menu closes when you click elsewhere.
