@@ -21,7 +21,7 @@ Build order: shown to the team as the six build steps in the game plan; approved
   Learner check: Look at the screenshot of the page after clicking **Try sample emails** and **Find my trials**: do the three cards show the right service, date and price?
   Commit: `Turn sample emails into trial cards`
 
-- [ ] **2. The countdown**
+- [x] **2. The countdown**
   Becomes usable: Cards sit in a timeline sorted by soonest charge, with red/amber/green urgency, a badge and a countdown ("in 2 days"), and the banner shows money at risk and the next charge.
   Why now: The countdown is what makes the list useful at a glance, and it is the "oh, that's cool" moment in the demo.
   PRD ref: `prd.md > The countdown`, `prd.md > Look and Feel`, `prd.md > Screens and Layout`
@@ -93,3 +93,6 @@ Reflection:
 Activity mode:
 
 ## Revisions
+
+- Badge for 4–14 days says "Within 2 weeks" instead of "This month" — the window is 14 days, so "This month" would be wrong when it crosses into the next month.
+- Added `public/trials.js` (duplicate key, sorting, totals, money formatting) alongside `public/dates.js` — the server and the page both need these, so they live in one shared file instead of inside `storage.js` and `app.js`.

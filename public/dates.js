@@ -47,3 +47,29 @@ export function addMonths(iso, months) {
 export function daysBetween(fromISO, toISO) {
   return Math.round((toUTC(toISO) - toUTC(fromISO)) / DAY_MS);
 }
+
+// "today", "tomorrow", "in 2 days", "charged yesterday", "charged 3 days ago".
+export function countdownText(days) {
+  if (days === null) return 'No date found';
+  if (days === 0) return 'today';
+  if (days === 1) return 'tomorrow';
+  if (days > 1) return `in ${days} days`;
+  if (days === -1) return 'charged yesterday';
+  return `charged ${-days} days ago`;
+}
+
+// Red within 3 days, amber within 14, green later; grey once the date has passed.
+export function urgency(days) {
+  if (days === null) return 'none';
+  if (days < 0) return 'past';
+  if (days <= 3) return 'soon';
+  if (days <= 14) return 'month';
+  return 'later';
+}
+
+// "Fri, Oct 3"
+export function formatDate(iso) {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(year, month - 1, day)));
+}

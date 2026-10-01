@@ -32,7 +32,7 @@ One page, top to bottom, in a single centred column (max about 720px wide), beca
 From `scope.md > Inspiration & Identity`: a calm friend tapping you on the shoulder, not a scary finance app.
 - Clean, card-based, plenty of white space, rounded corners, soft shadows.
 - One bold number at the top (money at risk).
-- Urgency colours on each card: **red** = charges within 3 days, **amber** = within 14 days, **green** = later. Colour is never the only signal: every card also says "in 2 days" and has a text badge ("Soon", "This month", "Later").
+- Urgency colours on each card: **red** = charges within 3 days, **amber** = within 14 days, **green** = later. Colour is never the only signal: every card also says "in 2 days" and has a text badge ("Soon", "Within 2 weeks", "Later").
 - Friendly, plain-English copy ("Heads up! StreamBox charges you on Friday", "You're all clear 🎉").
 - A rounded, friendly font; looks good on a laptop and in a phone browser.
 

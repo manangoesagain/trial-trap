@@ -4,23 +4,41 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Trial Trap</title>
+  <meta name="description" content="Paste your free-trial emails and see what's about to charge you, when, and how to cancel.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪤</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="page">
     <header class="header">
-      <h1>Trial Trap 🪤</h1>
+      <h1 class="logo">Trial Trap <span aria-hidden="true">🪤</span></h1>
       <p class="tagline">Never pay for a trial you forgot.</p>
     </header>
 
-    <section class="paste" aria-labelledby="paste-title">
-      <h2 id="paste-title" class="visually-hidden">Paste your trial emails</h2>
-      <textarea id="email-text" rows="10" placeholder="Paste one or more trial emails here…" aria-label="Trial emails"></textarea>
+    <ol class="steps" aria-label="How it works">
+      <li><span class="step-icon" aria-hidden="true">📋</span><strong>Paste</strong> your free-trial emails</li>
+      <li><span class="step-icon" aria-hidden="true">🔍</span><strong>Find</strong> what charges you and when</li>
+      <li><span class="step-icon" aria-hidden="true">⏰</span><strong>Get reminded</strong> before you pay</li>
+    </ol>
+
+    <section class="paste panel" aria-labelledby="paste-title">
+      <h2 id="paste-title" class="panel-title">Paste your trial emails</h2>
+      <textarea id="email-text" rows="9" placeholder="Paste one or more trial emails here… (put a line with --- between emails)" aria-label="Trial emails"></textarea>
       <div class="actions">
         <button id="find-button" class="button primary" type="button">Find my trials</button>
         <button id="sample-button" class="button secondary" type="button">Try sample emails</button>
       </div>
       <p id="message" class="message" role="status" aria-live="polite"></p>
+      <p class="privacy">🔒 With smart reading on, pasted text is sent to an AI model hosted by NVIDIA to find your trials. Trial Trap doesn't keep it, and your trials are saved only in this browser. Remove anything sensitive before pasting.</p>
+    </section>
+
+    <section id="banner" class="banner" aria-live="polite" hidden>
+      <p class="banner-label" id="banner-label">Money at risk</p>
+      <p class="banner-amount" id="banner-amount"></p>
+      <p class="banner-next" id="banner-next"></p>
     </section>
 
     <section id="trial-list" class="trial-list" aria-label="Your trials"></section>
