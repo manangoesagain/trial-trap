@@ -147,3 +147,42 @@ test('start-up check finds the model or suggests close names', async () => {
   assert.equal(missing.found, false);
   assert.deepEqual(missing.suggestions, ['meta/llama-3.3-70b-instruct', 'meta/llama-4-maverick-17b-128e-instruct']);
 });
+
+test('an odd field from the AI is cleaned up instead of losing the trial', () => {
+  const odd = { ...goodReply.trials[0], price: '15.99', currency: '₹', cancelSteps: 'Go to Account > Membership', dateIsEstimated: 'false', chargeDate: 'October 3, 2026' };
+  const { trials, ignoredCount } = parseReply(JSON.stringify({ trials: [odd], ignoredCount: null }));
+  assert.deepEqual(
+    [trials[0].price, trials[0].currency, trials[0].chargeDate, trials[0].dateIsEstimated, trials[0].cancelSteps, ignoredCount],
+    [15.99, 'INR', '2026-10-03', false, ['Go to Account > Membership'], 0],
+  );
+  for (const chargeDate of ['2026/10/03', '2026-10-3', '2026-10-03T00:00:00Z']) {
+    assert.equal(parseReply(JSON.stringify({ trials: [{ ...odd, chargeDate }] })).trials[0].chargeDate, '2026-10-03', chargeDate);
+  }
+});
+
+test('if the AI finds trials but none are usable, the built-in reader takes over', async () => {
+  behaviour = (req, res) => sendJson(res, 200, chatReply(JSON.stringify({ trials: [{ service: '' }, { price: 5 }], ignoredCount: 0 })));
+  const result = await extract();
+  assert.equal(result.mode, 'basic');
+  assert.match(result.note, /Smart reading had a problem/);
+  assert.equal(result.trials.length, 3);
+});
+
+test('a key pasted with quotes or an invisible space still works', () => {
+  assert.equal(aiConfigFromEnv({ NVIDIA_API_KEY: ' "nvapi-abc123​" ' }).apiKey, 'nvapi-abc123');
+  assert.equal(aiConfigFromEnv({ NVIDIA_API_KEY: '“nvapi-abc123”' }).apiKey, 'nvapi-abc123');
+});
+
+test('start-up check says when the key cannot use the model', async () => {
+  const baseUrl = `http://127.0.0.1:${standIn.address().port}/v1`;
+  behaviour = (req, res, request) => (request.url.endsWith('/models')
+    ? sendJson(res, 200, { data: [{ id: 'meta/llama-3.3-70b-instruct' }] })
+    : sendJson(res, 403, { detail: 'Authorization failed' }));
+  const refused = await checkModel({ apiKey: KEY, model: 'meta/llama-3.3-70b-instruct', baseUrl });
+  assert.equal(refused.found, false);
+  assert.match(refused.reason, /won't let your key use it/);
+  assert.equal(requests.at(-1).body.max_tokens, 5, 'the test message is tiny');
+
+  const odd = await checkModel({ apiKey: 'nvapi-abc def', model: 'meta/llama-3.3-70b-instruct', baseUrl });
+  assert.match(odd.reason, /unexpected character/);
+});

@@ -1,6 +1,8 @@
 // The helper server: serves the web page and reads pasted emails at POST /api/extract.
 
+import fs from 'node:fs';
 import path from 'node:path';
+import { parseEnv } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import express from 'express';
 import { aiConfigFromEnv, aiExtract, checkModel } from './lib/aiExtract.js';
@@ -60,17 +62,28 @@ export function createApp({ ai = null, aiOptions = {} } = {}) {
   return app;
 }
 
+// Reads .env however a Windows editor saved it: plain, with a byte-order mark, or as UTF-16.
+// No .env file means smart reading stays off and the built-in reader is used.
+export function readEnvFile(file) {
+  let bytes;
+  try {
+    bytes = fs.readFileSync(file);
+  } catch {
+    return {};
+  }
+  const text = bytes[0] === 0xff && bytes[1] === 0xfe ? bytes.subarray(2).toString('utf16le') : bytes.toString('utf8');
+  return parseEnv(text.replace(/^\uFEFF/, ''));
+}
+
 const startedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (startedDirectly) {
-  try {
-    process.loadEnvFile(path.join(projectFolder, '.env'));
-  } catch {
-    // No .env file: smart reading stays off and the built-in reader is used.
-  }
-  const ai = aiConfigFromEnv();
-  const port = Number(process.env.PORT) || 3000;
+  // What's in .env wins over settings already in Windows, so the key you pasted is the one used.
+  const settings = { ...process.env, ...readEnvFile(path.join(projectFolder, '.env')) };
+  const ai = aiConfigFromEnv(settings);
+  const port = Number(settings.PORT) || 3000;
 
-  createApp({ ai }).listen(port, () => {
+  // Only this computer can open the app, so nobody else on the Wi-Fi can use your NVIDIA key.
+  const server = createApp({ ai }).listen(port, '127.0.0.1', () => {
     console.log(`Trial Trap is running at http://localhost:${port}`);
     if (!ai) {
       console.log('Smart reading is OFF (no NVIDIA_API_KEY in .env), so the built-in reader is used.');
@@ -84,5 +97,10 @@ if (startedDirectly) {
         if (result.suggestions.length) console.warn(`Similar models you could put in AI_MODEL: ${result.suggestions.join(', ')}`);
       })
       .catch(() => console.warn("Couldn't reach NVIDIA to check the model. Smart reading will fall back to basic reading if it fails."));
+  });
+  server.on('error', (error) => {
+    if (error.code !== 'EADDRINUSE') throw error;
+    console.error(`Port ${port} is already in use. Is Trial Trap already running in another window? Close it, or add PORT=${port + 1} to .env.`);
+    process.exit(1);
   });
 }

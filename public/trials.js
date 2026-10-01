@@ -21,9 +21,11 @@ export function safeUrl(value) {
   }
 }
 
+// With no currency in the email, show just the amount rather than guess dollars.
 export function formatMoney(amount, currency) {
+  if (!currency) return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
   try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency ?? 'USD' }).format(amount);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
   } catch {
     return `${amount.toFixed(2)} ${currency}`;
   }
@@ -46,17 +48,17 @@ export function summarize(trials, today) {
   const atRisk = {};
   for (const trial of upcoming) {
     if (trial.price === null) continue;
-    const currency = trial.currency ?? 'USD';
+    const currency = trial.currency ?? '';
     atRisk[currency] = Math.round(((atRisk[currency] ?? 0) + trial.price) * 100) / 100;
   }
   const saved = {};
-  for (const trial of trials.filter((t) => t.status === 'cancelled' && t.price !== null)) {
-    const currency = trial.currency ?? 'USD';
+  for (const trial of trials.filter((t) => t.status === 'cancelled' && t.price !== null && t.cancelledInTime !== false)) {
+    const currency = trial.currency ?? '';
     saved[currency] = Math.round(((saved[currency] ?? 0) + trial.price) * 100) / 100;
   }
   return { atRisk, saved, next: upcoming[0] ?? null, upcomingCount: upcoming.length };
 }
 
 export function formatTotals(totals) {
-  return Object.entries(totals).map(([currency, amount]) => formatMoney(amount, currency)).join(' + ');
+  return Object.entries(totals).map(([currency, amount]) => formatMoney(amount, currency || null)).join(' + ');
 }
