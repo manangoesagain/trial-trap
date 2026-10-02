@@ -353,12 +353,14 @@ function render() {
   trialsTitle.hidden = !trials.length;
   renderBanner(today);
   trialList.replaceChildren(...sortTrials(active).map((trial) => renderCard(trial, today)));
+  observeReveal(trialList);
 
   cancelledSection.hidden = !cancelled.length;
   const { saved } = summarize(trials, today);
   setText(cancelledTitle, `Cancelled (${cancelled.length})`);
   setText(cancelledSaved, Object.keys(saved).length ? `${formatTotals(saved)} saved` : '');
   cancelledList.replaceChildren(...sortTrials(cancelled).map(renderCancelledCard));
+  observeReveal(cancelledList);
 
   listFooter.hidden = !trials.length;
 }
@@ -409,7 +411,6 @@ async function findTrials() {
     trials = merged.trials;
     const saved = persist();
     render();
-    playEntrance();
     const found = result.trials.length;
     let summary;
     if (!merged.added) summary = found === 1 ? 'That trial is already on your list.' : 'Those trials are already on your list.';
@@ -472,17 +473,30 @@ window.addEventListener('storage', (event) => {
   render();
 });
 
-// A short, once-only rise for the cards when a Find brings back results.
-// It answers the click; it is not scroll decoration, and reduced motion skips it.
-function playEntrance() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  trialList.querySelectorAll('.card').forEach((card, index) => {
-    card.style.setProperty('--enter-delay', `${Math.min(index, 8) * 55}ms`);
-    card.classList.add('card--enter');
-    card.addEventListener('animationend', () => {
-      card.classList.remove('card--enter');
-      card.style.removeProperty('--enter-delay');
-    }, { once: true });
+// Cards rise into place as the timeline scrolls into view — not a one-shot
+// animation that only plays near the top, but a real scroll effect: a card
+// below the fold stays hidden until you actually scroll to it. Reduced
+// motion shows every card immediately, no animation at all.
+const revealObserver = 'IntersectionObserver' in window
+  ? new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' })
+  : null;
+
+function observeReveal(container) {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  container.querySelectorAll('.card').forEach((card, index) => {
+    if (reduceMotion || !revealObserver) {
+      card.classList.add('is-visible');
+      return;
+    }
+    card.style.setProperty('--reveal-delay', `${Math.min(index, 6) * 70}ms`);
+    card.classList.add('reveal');
+    revealObserver.observe(card);
   });
 }
 
@@ -517,19 +531,22 @@ sampleButton.addEventListener('click', () => {
 });
 
 // Pin the money-at-risk bar to the top and condense it once you scroll past it,
-// so the stakes stay with you while you read the trials.
-if (bannerSentinel) {
+// and drift the background glow with the page, so scrolling visibly moves more
+// than just the list. One rAF-throttled listener drives both, cheaply.
+{
+  const moveGlow = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let ticking = false;
-  const syncStuck = () => {
-    banner.classList.toggle('is-stuck', bannerSentinel.getBoundingClientRect().top < 0);
+  const syncScroll = () => {
+    if (bannerSentinel) banner.classList.toggle('is-stuck', bannerSentinel.getBoundingClientRect().top < 0);
+    if (moveGlow) document.documentElement.style.setProperty('--scrollY', String(window.scrollY));
     ticking = false;
   };
   window.addEventListener('scroll', () => {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(syncStuck);
+    requestAnimationFrame(syncScroll);
   }, { passive: true });
-  syncStuck();
+  syncScroll();
 }
 
 render();

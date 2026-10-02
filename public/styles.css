@@ -1,7 +1,11 @@
 /* Trial Trap — a dark "night-watch ledger": your trials laid out on a glowing
    timeline, with frosted-glass panels that only read because the field behind
-   them is deep and warm. Serif display (Fraunces) for the voice, Nunito for the
-   working text. One warm teal, one coral for danger — nothing else shouts. */
+   them is deep and warm. Typography borrows the structural idea institutional
+   finance sites use — a tight grotesque sans for words (Archivo) and a true
+   monospace for every number, date and amount (Roboto Mono) — built entirely
+   from open-licensed fonts, since the real Goldman Sachs typeface is a
+   proprietary in-house face served off their own CDN and isn't ours to use.
+   One warm teal, one coral for danger — nothing else shouts. */
 
 :root {
   --bg: #0b1715;
@@ -20,7 +24,11 @@
   --safe: #67e2a6;
   --radius: 18px;
   --radius-sm: 12px;
-  font-family: "Nunito", ui-rounded, "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font: "Archivo", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-narrow: "Archivo Narrow", "Archivo", "Segoe UI", sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, "Cascadia Mono", monospace;
+  --scrollY: 0;
+  font-family: var(--font);
   color: var(--ink);
   background: var(--bg);
   color-scheme: dark;
@@ -39,24 +47,42 @@ body {
   background-attachment: fixed;
 }
 
+/* Ambient light behind everything — two soft blooms that drift as you scroll,
+   so depth is felt the moment the page moves, not just at one sticky bar. */
+.ambient { position: fixed; inset: 0; overflow: hidden; z-index: -1; pointer-events: none; }
+.glow {
+  position: absolute; border-radius: 50%; filter: blur(100px);
+  will-change: transform;
+}
+.glow-teal {
+  width: 48vw; height: 48vw; top: -16vw; right: -12vw; background: var(--teal); opacity: 0.30;
+  transform: translateY(calc(var(--scrollY, 0) * -0.06px));
+}
+.glow-coral {
+  width: 42vw; height: 42vw; bottom: -16vw; left: -14vw; background: var(--coral); opacity: 0.20;
+  transform: translateY(calc(var(--scrollY, 0) * 0.05px));
+}
+@media (prefers-reduced-motion: reduce) { .glow { transform: none !important; } }
+
 .page { max-width: 760px; margin: 0 auto; padding: 0 20px 64px; }
 
 /* --- Hero: left-aligned and editorial, not a centred emoji block --- */
 .hero { padding: 72px 0 26px; }
 .logo {
-  font-family: "Fraunces", Georgia, "Times New Roman", serif;
-  font-weight: 600;
-  font-size: clamp(3rem, 11vw, 5.2rem);
+  font-family: var(--font);
+  font-weight: 900;
+  font-size: clamp(2.7rem, 10vw, 4.6rem);
   line-height: 0.96;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.045em;
   margin: 0;
 }
-.logo-mark { font-size: 0.62em; margin-left: 0.1em; -webkit-text-stroke: 0; filter: saturate(1.1); }
+.logo-mark { font-size: 0.56em; margin-left: 0.12em; filter: saturate(1.1); }
 .tagline {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font);
   font-style: italic;
   font-weight: 500;
-  font-size: clamp(1.15rem, 3.4vw, 1.6rem);
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  letter-spacing: -0.01em;
   color: var(--teal);
   margin: 14px 0 0;
   max-width: 24ch;
@@ -66,13 +92,14 @@ body {
 .steps { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 0; margin: 30px 0 0; }
 .steps li { display: flex; align-items: baseline; gap: 9px; color: var(--muted); font-weight: 600; font-size: 0.98rem; }
 .step-n {
-  font-family: "Fraunces", serif; font-weight: 600; font-size: 0.95rem;
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.92rem;
   color: var(--teal); min-width: 1.2em;
 }
 .steps li + li { position: relative; }
 
 /* --- Panels / glass --- */
 .panel {
+  position: relative;
   margin-top: 34px;
   background: var(--glass);
   backdrop-filter: blur(16px) saturate(1.2);
@@ -82,7 +109,15 @@ body {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.36);
   padding: 22px;
 }
-.panel-title { font-family: "Fraunces", serif; font-weight: 600; font-size: 1.3rem; margin: 0 0 12px; }
+/* The glass "sheen" — a soft diagonal highlight so the blur reads as glass even in a still image. */
+.panel::before, .banner::before, .menu-options::before, .toast::before {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 45%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+.panel-title { font-family: var(--font); font-weight: 800; letter-spacing: -0.01em; font-size: 1.25rem; margin: 0 0 12px; }
 
 textarea {
   width: 100%;
@@ -148,14 +183,14 @@ a { color: var(--teal); }
   box-shadow: 0 26px 60px rgba(0, 0, 0, 0.45);
   transition: padding 0.25s ease, border-radius 0.25s ease, box-shadow 0.25s ease, top 0.25s ease;
 }
-.banner-label { margin: 0; font-size: 0.82rem; letter-spacing: 0.02em; font-weight: 700; color: var(--muted); }
+.banner-label { margin: 0; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
 .banner-amount {
   margin: 4px 0 6px;
-  font-family: "Fraunces", Georgia, serif;
-  font-size: clamp(2.8rem, 9vw, 3.6rem);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: clamp(2.6rem, 8.4vw, 3.4rem);
+  font-weight: 700;
   line-height: 0.98;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--ink);
   text-shadow: 0 0 40px rgba(255, 125, 92, 0.25);
 }
@@ -202,6 +237,13 @@ a { color: var(--teal); }
   padding: 17px 20px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
 }
+.card::after {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0) 38%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  pointer-events: none;
+}
 #trial-list > .card::before {
   content: "";
   position: absolute;
@@ -215,17 +257,18 @@ a { color: var(--teal); }
   box-shadow: 0 0 0 4px rgba(11, 23, 21, 0.9), 0 0 16px var(--node, var(--teal));
 }
 .card-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
-.service { margin: 0; font-family: "Fraunces", serif; font-size: 1.3rem; font-weight: 600; min-width: 0; letter-spacing: -0.01em; }
+.service { margin: 0; font-family: var(--font); font-size: 1.22rem; font-weight: 800; min-width: 0; letter-spacing: -0.015em; }
 .badge {
-  font-size: 0.74rem; font-weight: 800; padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+  font-family: var(--font-narrow); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 4px 11px; border-radius: 999px; white-space: nowrap;
   background: rgba(237, 243, 240, 0.08); color: var(--muted); border: 1px solid var(--line);
 }
-.countdown { margin: 8px 0 0; font-size: 1.05rem; color: var(--ink); }
-.countdown strong { font-weight: 800; }
-.charge-meta { margin: 2px 0 0; font-size: 0.9rem; color: var(--muted); font-weight: 600; }
-.charge-meta .estimated, .estimated { font-size: 0.85rem; color: var(--faint); font-weight: 600; }
-.price { margin: 6px 0 0; color: var(--muted); font-weight: 600; }
-.not-found { color: var(--faint); font-style: italic; }
+.countdown { margin: 8px 0 0; font-size: 1.02rem; color: var(--ink); font-family: var(--font-mono); }
+.countdown strong { font-weight: 700; }
+.charge-meta { margin: 2px 0 0; font-size: 0.88rem; color: var(--muted); font-weight: 500; font-family: var(--font-mono); }
+.charge-meta .estimated, .estimated { font-size: 0.83rem; color: var(--faint); font-weight: 500; }
+.price { margin: 6px 0 0; color: var(--muted); font-weight: 500; font-family: var(--font-mono); }
+.not-found { color: var(--faint); font-style: italic; font-family: var(--font); }
 
 /* Urgency shows on the node and the countdown, not as yet another coloured card border. */
 .urgency-soon { --node: var(--coral); }
@@ -297,7 +340,7 @@ a.button { display: inline-block; text-decoration: none; }
 /* --- Cancelled: a quiet, dimmed shelf below the live timeline --- */
 .cancelled-section { margin-top: 34px; }
 .section-summary { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; cursor: pointer; padding: 6px 0; }
-.section-title { font-family: "Fraunces", serif; display: inline; font-size: 1.15rem; margin: 0; color: var(--muted); font-weight: 600; }
+.section-title { font-family: var(--font); display: inline; font-size: 1.1rem; margin: 0; color: var(--muted); font-weight: 800; letter-spacing: -0.01em; }
 .section-saved { font-weight: 700; font-size: 0.95rem; color: var(--safe); }
 #cancelled-list { padding-left: 0; }
 #cancelled-list::before { display: none; }
@@ -342,10 +385,16 @@ a.button { display: inline-block; text-decoration: none; }
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-/* --- Motion only where it answers an action, and only if it's welcome --- */
-@keyframes card-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+/* --- Scroll reveal: cards rise into place as the timeline scrolls into view,
+   not just once when Find returns them. The JS adds .reveal, then .is-visible
+   via IntersectionObserver as each card crosses into the viewport. --- */
+.card.reveal { opacity: 0; transform: translateY(18px); }
+.card.reveal.is-visible { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: no-preference) {
-  .trial-list .card.card--enter { animation: card-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--enter-delay, 0ms); }
+  .card.reveal {
+    transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
 }
 @media (prefers-reduced-motion: no-preference) and (hover: hover) {
   .card { transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease, border-color 0.18s ease; }
@@ -354,13 +403,14 @@ a.button { display: inline-block; text-decoration: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .banner, .card, .button { transition: none; }
-  .trial-list .card.card--enter { animation: none; opacity: 1; transform: none; }
+  .card.reveal { opacity: 1; transform: none; }
 }
 
-/* Forced-colors (Windows contrast themes): glass drops out, so keep clear edges. */
+/* Forced-colors (Windows contrast themes): glass and sheen drop out, so keep clear edges. */
 @media (forced-colors: active) {
   .panel, .card, .banner, .toast, .menu-options { border: 1px solid CanvasText; }
   .toast-undo, .button.primary { border: 1px solid ButtonText; }
+  .panel::before, .banner::before, .menu-options::before, .toast::before, .card::after, .ambient { display: none; }
 }
 
 @media (max-width: 560px) {
