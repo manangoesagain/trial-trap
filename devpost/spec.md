@@ -175,3 +175,7 @@ No database, no hosting, no other services.
 - **AI provider: NVIDIA API catalog (build.nvidia.com)** — the team's choice; they already have a key. Model is configurable; Claude recommended a fast mid-size default, with the team free to try their preferred large model.
 - **Learner uncertainty: "What is an API key and where does it go?"** A key is like a password that lets the app use the AI under the owner's account. It goes in a `.env` file on the laptop, which git ignores, so it never lands on GitHub. Check during the build: `git status` never lists `.env`, and searching the repo for `nvapi-` finds nothing.
 - **Open:** confirm the exact model name in the team's NVIDIA catalog at the first checkpoint (the helper prints a warning if it isn't found).
+
+## 1-click Gmail button (optional)
+
+`public/connect.html` offers a bookmarklet the user drags to their bookmarks bar. While reading an email in Gmail it reads the open message (sender, subject and body from Gmail's `.gs`/`.gD`/`.a3s`/`h2.hP` elements), base64-encodes it and opens `http://localhost:3000/#import=...`. On load and on `hashchange`, `app.js` decodes the text, clears the hash, and runs it through the same reader as a paste, so it's shown as plain text and nothing new is trusted. No credentials, no sign-in; the email only goes from the Gmail tab to the local app.

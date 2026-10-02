@@ -465,6 +465,26 @@ window.addEventListener('storage', (event) => {
   render();
 });
 
+// The one-click Gmail button opens the app with an email packed into the URL (#import=...).
+// It's the same text you'd paste, so it goes through the same reader and is shown as plain text.
+function importFromUrl() {
+  const match = /[#&]import=([^&]+)/.exec(location.hash);
+  if (!match) return;
+  let text = '';
+  try {
+    text = decodeURIComponent(escape(window.atob(decodeURIComponent(match[1]))));
+  } catch {
+    text = '';
+  }
+  // Drop it from the address bar so a refresh doesn't read the same email again.
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!text.trim()) return;
+  emailText.value = text;
+  emailText.setSelectionRange(0, 0);
+  findTrials();
+}
+window.addEventListener('hashchange', importFromUrl);
+
 findButton.addEventListener('click', findTrials);
 clearButton.addEventListener('click', clearAll);
 onClick(toastUndo, () => toastUndoAction?.());
@@ -476,3 +496,4 @@ sampleButton.addEventListener('click', () => {
 });
 
 render();
+importFromUrl();

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trial Trap · 1-click Gmail button</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .connect { max-width: 640px; }
+    .drag-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 14px 0 6px; }
+    .bookmarklet {
+      display: inline-block; font-weight: 800; text-decoration: none;
+      background: var(--accent); color: #fff; border-radius: 999px;
+      padding: 12px 22px; border: 2px solid transparent; cursor: grab;
+    }
+    .bookmarklet:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    ol.how { padding-left: 1.3em; }
+    ol.how li { margin: 8px 0; }
+    details.fallback { margin-top: 16px; }
+    details.fallback pre {
+      background: #fffdf9; border: 2px solid #7b8794; border-radius: 12px;
+      padding: 12px 14px; overflow-x: auto; font-size: 0.82rem; white-space: pre-wrap; word-break: break-all;
+    }
+    .back { display: inline-block; margin-top: 20px; font-weight: 700; color: var(--accent-dark); }
+  </style>
+</head>
+<body>
+  <main class="page connect">
+    <header class="header">
+      <h1 class="logo">The 1-click Gmail button</h1>
+      <p class="tagline">Send a trial email straight to Trial Trap, no copy-paste.</p>
+    </header>
+
+    <section class="panel">
+      <p>Drag this button up to your browser's bookmarks bar. Then, whenever you're reading a free-trial email in Gmail, click it: Trial Trap opens with that email already filled in.</p>
+
+      <div class="drag-row">
+        <a class="bookmarklet" href="javascript:(function(){var s=(document.querySelector(&#x27;h2.hP&#x27;)||{}).innerText||&#x27;&#x27;,o=[];document.querySelectorAll(&#x27;div.gs&#x27;).forEach(function(g){var b=g.querySelector(&#x27;.a3s&#x27;);if(!b)return;var d=g.querySelector(&#x27;.gD&#x27;),n=d?(d.getAttribute(&#x27;name&#x27;)||d.innerText):&#x27;&#x27;,e=d?d.getAttribute(&#x27;email&#x27;):&#x27;&#x27;;o.push((n?&#x27;From: &#x27;+n+(e?&#x27; &lt;&#x27;+e+&#x27;&gt;&#x27;:&#x27;&#x27;)+&#x27;\n&#x27;:&#x27;&#x27;)+(s?&#x27;Subject: &#x27;+s+&#x27;\n&#x27;:&#x27;&#x27;)+&#x27;\n&#x27;+b.innerText.trim());});if(!o.length){var b=document.querySelector(&#x27;.a3s&#x27;);if(b)o.push((s?&#x27;Subject: &#x27;+s+&#x27;\n\n&#x27;:&#x27;&#x27;)+b.innerText.trim());}if(!o.length){alert(&#x27;Open an email in Gmail first, then click this button.&#x27;);return;}var t=o.join(&#x27;\n---\n&#x27;),u=&#x27;http://localhost:3000/#import=&#x27;+encodeURIComponent(btoa(unescape(encodeURIComponent(t))));window.open(u,&#x27;trialtrap&#x27;);})();">📩 Trials from this email</a>
+        <span class="not-found">← drag me to your bookmarks bar</span>
+      </div>
+      <p class="privacy">🔒 No password, no sign-in. The email only travels from your Gmail tab to Trial Trap on your own computer. Nothing is stored or sent anywhere else.</p>
+
+      <h2 class="panel-title">How to set it up</h2>
+      <ol class="how">
+        <li>Make sure your bookmarks bar is showing (in Chrome or Edge: <strong>Ctrl+Shift+B</strong>).</li>
+        <li>Drag the green <strong>📩 Trials from this email</strong> button above onto that bar.</li>
+        <li>Start Trial Trap as usual (<code>npm start</code>), then open a free-trial email in Gmail and click the button.</li>
+      </ol>
+      <p class="not-found">It opens Trial Trap at <code>localhost:3000</code>. If you changed the port, use that number instead (see the fallback below).</p>
+
+      <details class="fallback">
+        <summary class="button small soft" style="display:inline-block">Can't drag it? Copy the code instead</summary>
+        <p>Make a new bookmark (right-click the bookmarks bar → Add page), name it <strong>Trials from this email</strong>, and paste this as the address:</p>
+        <pre>javascript:(function(){var s=(document.querySelector(&#x27;h2.hP&#x27;)||{}).innerText||&#x27;&#x27;,o=[];document.querySelectorAll(&#x27;div.gs&#x27;).forEach(function(g){var b=g.querySelector(&#x27;.a3s&#x27;);if(!b)return;var d=g.querySelector(&#x27;.gD&#x27;),n=d?(d.getAttribute(&#x27;name&#x27;)||d.innerText):&#x27;&#x27;,e=d?d.getAttribute(&#x27;email&#x27;):&#x27;&#x27;;o.push((n?&#x27;From: &#x27;+n+(e?&#x27; &lt;&#x27;+e+&#x27;&gt;&#x27;:&#x27;&#x27;)+&#x27;\n&#x27;:&#x27;&#x27;)+(s?&#x27;Subject: &#x27;+s+&#x27;\n&#x27;:&#x27;&#x27;)+&#x27;\n&#x27;+b.innerText.trim());});if(!o.length){var b=document.querySelector(&#x27;.a3s&#x27;);if(b)o.push((s?&#x27;Subject: &#x27;+s+&#x27;\n\n&#x27;:&#x27;&#x27;)+b.innerText.trim());}if(!o.length){alert(&#x27;Open an email in Gmail first, then click this button.&#x27;);return;}var t=o.join(&#x27;\n---\n&#x27;),u=&#x27;http://localhost:3000/#import=&#x27;+encodeURIComponent(btoa(unescape(encodeURIComponent(t))));window.open(u,&#x27;trialtrap&#x27;);})();</pre>
+      </details>
+    </section>
+
+    <a class="back" href="/">← Back to Trial Trap</a>
+  </main>
+</body>
+</html>

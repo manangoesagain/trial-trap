@@ -13,6 +13,7 @@ Paste your free-trial signup emails to see which trials are about to charge you,
 - **How to cancel** shows the cancel steps and link from the email, if the email has them.
 - **I cancelled it ✓** moves a trial to the Cancelled list and counts it as money saved. **×** removes a trial that was read wrongly. Both have an **Undo** button.
 - Remembers your trials in the browser between visits, with no account and no database. Pasting the same email twice won't add the trial twice.
+- A **1-click Gmail button** (optional) sends the email you're reading straight here, so you don't have to copy-paste. It needs no password and no sign-in. Set it up from the link under the paste box, or open `/connect.html`.
 
 ## Run it on Windows
 
@@ -66,6 +67,7 @@ saved in localStorage
 | `lib/readDates.js` | Reads dates written the ways emails write them, for both readers |
 | `lib/validateTrials.js` | Checks and cleans every trial from either reader (real dates, sensible prices, only `http(s)` links) |
 | `public/index.html`, `public/styles.css`, `public/app.js` | The page |
+| `public/connect.html` | Setup page for the 1-click Gmail button |
 | `public/calendar.js` | Builds the Google Calendar link and the `.ics` file |
 | `public/storage.js` | Saves trials in the browser's `localStorage` and merges new trials without duplicates |
 | `public/dates.js`, `public/trials.js` | Date maths, sorting and totals, shared by the page and the server |
