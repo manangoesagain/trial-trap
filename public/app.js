@@ -27,6 +27,13 @@ const clearButton = document.querySelector('#clear-button');
 const toast = document.querySelector('#toast');
 const toastText = document.querySelector('#toast-text');
 const toastUndo = document.querySelector('#toast-undo');
+const emptyState = document.querySelector('#empty-state');
+const manualToggle = document.querySelector('#manual-toggle');
+const manualForm = document.querySelector('#manual-form');
+const manualCancel = document.querySelector('#manual-cancel');
+const manualService = document.querySelector('#manual-service');
+const manualDate = document.querySelector('#manual-date');
+const manualPrice = document.querySelector('#manual-price');
 
 const BADGES = { soon: 'Soon', month: 'Within 2 weeks', later: 'Later', past: 'Charged', none: 'No date' };
 const TOAST_SECONDS = 6;
@@ -351,6 +358,7 @@ function render() {
   const cancelled = trials.filter((trial) => trial.status === 'cancelled');
 
   trialsTitle.hidden = !trials.length;
+  emptyState.hidden = trials.length > 0;
   renderBanner(today);
   trialList.replaceChildren(...sortTrials(active).map((trial) => renderCard(trial, today)));
   observeReveal(trialList);
@@ -528,6 +536,47 @@ sampleButton.addEventListener('click', () => {
   emailText.setSelectionRange(0, 0);
   emailText.focus();
   emailText.scrollTop = 0;
+});
+
+// A second way in for anyone without an email handy: a plain form that goes
+// through the same merge/dedupe path as a pasted one, so it behaves exactly
+// like any other trial (countdown, calendar, cancel panel, undo on delete).
+function closeManualForm() {
+  manualForm.hidden = true;
+  manualToggle.setAttribute('aria-expanded', 'false');
+  manualForm.reset();
+}
+manualToggle.addEventListener('click', () => {
+  const opening = manualForm.hidden;
+  manualForm.hidden = !opening;
+  manualToggle.setAttribute('aria-expanded', String(opening));
+  if (opening) manualService.focus();
+  else manualForm.reset();
+});
+manualCancel.addEventListener('click', closeManualForm);
+manualForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const service = manualService.value.trim();
+  if (!service) {
+    manualService.focus();
+    return;
+  }
+  const price = manualPrice.value === '' ? null : Number(manualPrice.value);
+  const trial = {
+    service,
+    chargeDate: manualDate.value || null,
+    price: Number.isFinite(price) ? price : null,
+    currency: Number.isFinite(price) ? 'USD' : null,
+    cancelUrl: null,
+    cancelSteps: [],
+  };
+  const merged = mergeTrials(trials, [trial]);
+  trials = merged.trials;
+  persist();
+  render();
+  showMessage(merged.added ? `Added ${service}.` : `${service} is already on your list.`);
+  closeManualForm();
+  trialList.focus({ preventScroll: true });
 });
 
 // Pin the money-at-risk bar to the top and condense it once you scroll past it,
