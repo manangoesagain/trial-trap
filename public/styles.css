@@ -1,404 +1,372 @@
+/* Trial Trap — a dark "night-watch ledger": your trials laid out on a glowing
+   timeline, with frosted-glass panels that only read because the field behind
+   them is deep and warm. Serif display (Fraunces) for the voice, Nunito for the
+   working text. One warm teal, one coral for danger — nothing else shouts. */
+
 :root {
-  --background: #faf7f2;
-  --surface: #ffffff;
-  --ink: #1f2933;
-  --muted: #52606d;
-  --line: #e7e1d8;
-  --accent: #0f766e;
-  --accent-dark: #0b5c56;
-  --accent-soft: #e3f3f1;
-  --soon: #dc2626;
-  --soon-soft: #fde8e8;
-  --month: #b45309;
-  --month-soft: #fdf0dc;
-  --later: #15803d;
-  --later-soft: #e3f4e8;
-  --past: #6b7280;
-  --past-soft: #f0f1f3;
-  --radius: 16px;
-  --shadow: 0 1px 2px rgba(40, 30, 20, 0.05), 0 8px 24px rgba(40, 30, 20, 0.07);
+  --bg: #0b1715;
+  --bg-2: #0e1e1b;
+  --ink: #edf3f0;
+  --muted: #a3b7b1;
+  --faint: #70857f;
+  --line: rgba(237, 243, 240, 0.10);
+  --line-strong: rgba(237, 243, 240, 0.18);
+  --glass: rgba(20, 42, 38, 0.52);
+  --glass-strong: rgba(13, 30, 27, 0.74);
+  --teal: #3ad4b6;
+  --teal-deep: #0f766e;
+  --amber: #ffb65e;
+  --coral: #ff7d5c;
+  --safe: #67e2a6;
+  --radius: 18px;
+  --radius-sm: 12px;
   font-family: "Nunito", ui-rounded, "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--ink);
-  background: var(--background);
+  background: var(--bg);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--background);
+  min-height: 100vh;
   line-height: 1.5;
+  background:
+    radial-gradient(120% 70% at 85% -10%, rgba(58, 212, 182, 0.12), transparent 60%),
+    radial-gradient(90% 60% at 0% 8%, rgba(255, 125, 92, 0.07), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
 }
 
-.page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 32px 16px 48px;
+.page { max-width: 760px; margin: 0 auto; padding: 0 20px 64px; }
+
+/* --- Hero: left-aligned and editorial, not a centred emoji block --- */
+.hero { padding: 72px 0 26px; }
+.logo {
+  font-family: "Fraunces", Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  font-size: clamp(3rem, 11vw, 5.2rem);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.logo-mark { font-size: 0.62em; margin-left: 0.1em; -webkit-text-stroke: 0; filter: saturate(1.1); }
+.tagline {
+  font-family: "Fraunces", Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.15rem, 3.4vw, 1.6rem);
+  color: var(--teal);
+  margin: 14px 0 0;
+  max-width: 24ch;
 }
 
-.header { text-align: center; margin-bottom: 20px; }
-.logo { font-family: "Fraunces", Georgia, "Times New Roman", serif; font-size: 2.6rem; font-weight: 600; margin: 0; letter-spacing: -0.015em; }
-.tagline { font-size: 1.15rem; color: var(--muted); margin: 4px 0 0; }
-
-.steps {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 0;
-  margin: 0 0 20px;
+/* A real three-step sequence, so numbers are honest here. Inline, not three equal cards. */
+.steps { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 0; margin: 30px 0 0; }
+.steps li { display: flex; align-items: baseline; gap: 9px; color: var(--muted); font-weight: 600; font-size: 0.98rem; }
+.step-n {
+  font-family: "Fraunces", serif; font-weight: 600; font-size: 0.95rem;
+  color: var(--teal); min-width: 1.2em;
 }
-.steps li {
-  text-wrap: balance;
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-size: 0.92rem;
-  color: var(--muted);
-  box-shadow: var(--shadow);
-  text-align: center;
-}
-.steps strong { color: var(--ink); }
-.step-icon { display: block; font-size: 1.4rem; }
+.steps li + li { position: relative; }
 
+/* --- Panels / glass --- */
 .panel {
-  background: var(--surface);
+  margin-top: 34px;
+  background: var(--glass);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.36);
+  padding: 22px;
 }
-.panel-title { font-size: 1.1rem; margin: 0 0 10px; }
+.panel-title { font-family: "Fraunces", serif; font-weight: 600; font-size: 1.3rem; margin: 0 0 12px; }
 
 textarea {
   width: 100%;
-  min-height: 180px;
+  min-height: 170px;
   resize: vertical;
-  border: 2px solid #7b8794;
-  border-radius: 12px;
-  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 13px 15px;
   font: inherit;
   font-size: 0.95rem;
   color: var(--ink);
-  background: #fffdf9;
+  background: rgba(6, 15, 13, 0.55);
 }
-textarea:focus { outline: none; border-color: var(--accent); }
+textarea::placeholder { color: var(--faint); }
+textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(58, 212, 182, 0.2); }
 
-.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 
 .button {
   font: inherit;
-  font-weight: 700;
+  font-weight: 800;
   border-radius: 999px;
-  padding: 10px 20px;
+  padding: 11px 22px;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: background 0.15s, transform 0.05s;
+  border: 1px solid transparent;
+  color: var(--ink);
+  background: rgba(237, 243, 240, 0.06);
+  transition: transform 0.05s, background 0.15s, border-color 0.15s;
 }
 .button:active { transform: translateY(1px); }
-.button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-.button:disabled { cursor: progress; }
-.button.primary:disabled { background: var(--accent-dark); }
-.button.primary { background: var(--accent); color: #fff; }
-.button.primary:hover:not(:disabled) { background: var(--accent-dark); }
-.button.secondary { background: var(--accent-soft); color: var(--accent-dark); }
-.button.secondary:hover { border-color: var(--accent); }
+.button:focus-visible, a:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--teal); outline-offset: 2px;
+}
+.button:disabled { cursor: progress; opacity: 0.75; }
+.button.primary { background: var(--teal); color: #042a25; border-color: var(--teal); }
+.button.primary:hover:not(:disabled) { background: #52e0c5; }
+.button.primary:disabled { background: var(--teal-deep); color: #cdeee8; }
+.button.secondary { background: transparent; border-color: var(--line-strong); color: var(--ink); }
+.button.secondary:hover { border-color: var(--teal); color: var(--teal); }
+.button.soft { background: rgba(58, 212, 182, 0.12); color: var(--teal); }
+.button.soft:hover, .button.soft[aria-expanded="true"] { background: rgba(58, 212, 182, 0.2); }
+.button.small { font-size: 0.88rem; padding: 7px 15px; }
 
-.message { margin: 10px 0 0; font-weight: 600; color: var(--muted); min-height: 1.5em; }
-.message.error { color: var(--soon); }
-.privacy { margin: 6px 0 0; font-size: 0.85rem; color: var(--muted); }
+.message { margin: 12px 0 0; font-weight: 600; color: var(--muted); min-height: 1.5em; }
+.message.error { color: var(--coral); }
+.privacy { margin: 8px 0 0; font-size: 0.85rem; color: var(--faint); }
+.privacy a { color: var(--teal); }
+a { color: var(--teal); }
 
+/* --- The money-at-risk bar: a floating glass slab, the biggest number on the page --- */
+#banner-sentinel { height: 1px; margin: 0; }
 .banner {
   position: sticky;
-  top: 0;
+  top: 12px;
   z-index: 8;
-  margin: 24px 0 8px;
-  padding: 20px 24px;
+  margin: 34px 0 10px;
+  padding: 22px 26px;
   border-radius: var(--radius);
-  background: var(--ink);
-  color: #fff;
-  box-shadow: var(--shadow);
-  transition: padding 0.25s ease, border-radius 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  background: var(--glass-strong);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.45);
+  transition: padding 0.25s ease, border-radius 0.25s ease, box-shadow 0.25s ease, top 0.25s ease;
 }
-.banner-label { margin: 0; letter-spacing: 0.01em; font-size: 0.85rem; font-weight: 700; color: #cbd2d9; }
-.banner-amount { margin: 2px 0 4px; font-family: "Fraunces", Georgia, serif; font-size: 2.7rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.01em; }
-.banner-next { margin: 0; font-size: 1.05rem; color: #e4e7eb; overflow-wrap: anywhere; }
-.banner.clear { background: var(--later); }
-.banner.clear .banner-label, .banner.clear .banner-next { color: #fff; }
-
-.trial-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin-top: 16px; }
-
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 16px 20px;
-  border-left: 8px solid var(--line);
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-/* On a narrow phone the badge and × drop below a long name instead of splitting it mid-word. */
-.card-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
-.service { margin: 0; font-size: 1.25rem; font-weight: 800; min-width: 0; }
-.badge { font-size: 0.8rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
-.countdown { margin: 6px 0 0; font-size: 1.05rem; }
-.countdown strong { font-weight: 800; }
-.price { margin: 2px 0 0; color: var(--muted); font-weight: 600; }
-.estimated { font-size: 0.85rem; color: var(--muted); }
-.not-found { color: var(--muted); font-style: italic; }
-
-.urgency-soon { border-left-color: var(--soon); }
-.urgency-soon .badge { background: var(--soon-soft); color: #9b1c1c; }
-.urgency-soon .countdown strong { color: var(--soon); }
-.urgency-month { border-left-color: var(--month); }
-.urgency-month .badge { background: var(--month-soft); color: #8a3c00; }
-.urgency-later { border-left-color: var(--later); }
-.urgency-later .badge { background: var(--later-soft); color: #0f5f2c; }
-.urgency-past, .urgency-none { border-left-color: var(--past); }
-.urgency-past .badge, .urgency-none .badge { background: var(--past-soft); color: #4b5563; }
-.urgency-past .service, .urgency-past .countdown { color: var(--past); }
-
-.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: flex-start; }
-.button.small { font-size: 0.9rem; padding: 6px 14px; }
-.menu { position: relative; }
-.menu > summary {
-  list-style: none;
-  background: var(--accent-soft);
-  color: var(--accent-dark);
-  display: inline-block;
-  user-select: none;
-}
-.menu > summary::-webkit-details-marker { display: none; }
-.menu > summary:hover { border-color: var(--accent); }
-.menu[open] > summary { border-color: var(--accent); }
-.menu-options {
-  position: absolute;
-  z-index: 5;
-  top: calc(100% + 6px);
-  left: 0;
-  min-width: 230px;
-  background: var(--surface);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(31, 41, 51, 0.18);
-  padding: 6px;
-  display: grid;
-}
-.menu-option {
-  font: inherit;
+.banner-label { margin: 0; font-size: 0.82rem; letter-spacing: 0.02em; font-weight: 700; color: var(--muted); }
+.banner-amount {
+  margin: 4px 0 6px;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2.8rem, 9vw, 3.6rem);
   font-weight: 600;
-  text-align: left;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
   color: var(--ink);
-  background: none;
-  border: 0;
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
+  text-shadow: 0 0 40px rgba(255, 125, 92, 0.25);
 }
-.menu-option:hover { background: var(--accent-soft); }
-.button.soft { background: var(--accent-soft); color: var(--accent-dark); }
-.button.soft:hover, .button.soft[aria-expanded="true"] { border-color: var(--accent); }
-.cancel-body {
-  margin-top: 10px;
-  background: #fffdf9;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 10px 14px;
-}
-.cancel-body p { margin: 0 0 8px; }
-.cancel-steps { margin: 0 0 10px; padding-left: 1.2em; }
-.cancel-steps li { margin: 2px 0; }
-a.button { display: inline-block; text-decoration: none; }
+.banner-next { margin: 0; font-size: 1.02rem; color: var(--muted); overflow-wrap: anywhere; }
+.banner.clear .banner-amount { text-shadow: 0 0 40px rgba(103, 226, 166, 0.22); }
+.banner.clear .banner-label { color: var(--safe); }
 
-.card-labels { display: flex; align-items: center; gap: 6px; margin-left: auto; }
-.remove-button {
-  font: inherit;
-  font-size: 1.3rem;
-  line-height: 1;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 0;
-  background: none;
-  color: var(--muted);
-  cursor: pointer;
-}
-.remove-button:hover { background: var(--past-soft); color: var(--ink); }
-.remove-button:focus-visible, .link-button:focus-visible, .toast-undo:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-
-.cancelled-section { margin-top: 28px; }
-.section-summary { cursor: pointer; padding: 6px 0; border-radius: 8px; color: var(--muted); }
-.section-summary:hover .section-title { color: var(--ink); }
-.section-title { display: inline; font-size: 1.05rem; margin: 0; color: var(--muted); }
-.cancelled-section .trial-list { margin-top: 10px; }
-.card.cancelled { border-left-color: var(--past); background: #fbfbfa; box-shadow: none; border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.card.cancelled .service { color: var(--past); text-decoration: line-through; text-decoration-thickness: 2px; }
-.card.cancelled .badge { background: var(--later-soft); color: #0f5f2c; }
-
-.list-footer { margin-top: 20px; text-align: center; }
-.trial-list:focus { outline: none; }
-
-.footer {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 8px 16px 96px;
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-.footer p { margin: 2px 0; }
-.link-button {
-  font: inherit;
-  font-weight: 600;
-  background: none;
-  border: 0;
-  color: var(--muted);
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 8px;
-}
-.link-button:hover { color: var(--soon); }
-
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translate(-50%, 20px);
-  width: max-content;
-  max-width: calc(100% - 32px);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px 12px 20px;
-  border-radius: 14px;
-  background: rgba(31, 41, 51, 0.86);
-  backdrop-filter: blur(12px) saturate(1.1);
-  -webkit-backdrop-filter: blur(12px) saturate(1.1);
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 12px 34px rgba(40, 30, 20, 0.28);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s, transform 0.2s;
-  z-index: 10;
-}
-.toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
-.toast-undo {
-  font: inherit;
-  font-weight: 800;
-  background: #fff;
-  color: var(--ink);
-  border: 0;
-  border-radius: 999px;
-  padding: 6px 14px;
-  cursor: pointer;
-}
-.toast-text { min-width: 0; overflow-wrap: anywhere; }
-.toast-undo:focus-visible { outline-color: #fff; }
-
-/* Windows Contrast themes drop backgrounds, so give the note and its button an edge. */
-@media (forced-colors: active) {
-  .toast { border: 2px solid CanvasText; }
-  .toast-undo { border: 2px solid ButtonText; }
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-@media (max-width: 560px) {
-  .page { padding-top: 20px; }
-  .logo { font-size: 2rem; }
-  .steps { grid-template-columns: 1fr; gap: 8px; }
-  .steps li { text-align: left; }
-  .step-icon { display: inline; margin-right: 8px; }
-  .banner-amount { font-size: 2.1rem; }
-  .actions .button { flex: 1 1 auto; }
-  .toast { bottom: 16px; width: calc(100% - 32px); justify-content: space-between; }
-}
-
-/* --- Design-elevation pass: a faint hero texture, a sticky condensing alert bar,
-   one point-of-view serif, and motion only where it answers an action. --- */
-
-/* A faint warm grid behind the hero gives a crafted feel and something for the
-   frosted bar to pass over. Kept very low-contrast so it never competes with text. */
-.header { position: relative; isolation: isolate; overflow: hidden; }
-.header::before {
-  content: "";
-  position: absolute;
-  inset: -28px 0 -8px;
-  z-index: -1;
-  background-image: radial-gradient(rgba(15, 118, 110, 0.06) 1.1px, transparent 1.2px);
-  background-size: 22px 22px;
-  -webkit-mask-image: radial-gradient(130% 100% at 50% 0, #000 40%, transparent 78%);
-  mask-image: radial-gradient(130% 100% at 50% 0, #000 40%, transparent 78%);
-  pointer-events: none;
-}
-
-/* The sentinel sits just above the bar; the script flips .is-stuck when it passes the top. */
-#banner-sentinel { height: 1px; margin: 0; }
-
-/* Condensed state: a slim frosted strip that keeps the number and label in view. */
 .banner.is-stuck {
   display: flex;
   align-items: baseline;
   gap: 6px 16px;
   flex-wrap: wrap;
-  padding: 10px 20px;
-  border-radius: 0 0 var(--radius) var(--radius);
-  background: rgba(31, 41, 51, 0.82);
-  backdrop-filter: blur(14px) saturate(1.1);
-  -webkit-backdrop-filter: blur(14px) saturate(1.1);
-  box-shadow: 0 10px 30px rgba(40, 30, 20, 0.18);
+  padding: 12px 22px;
+  background: var(--glass-strong);
 }
-.banner.clear.is-stuck { background: rgba(21, 128, 61, 0.86); }
-.banner.is-stuck .banner-amount { margin: 0; font-size: 1.55rem; }
+.banner.is-stuck .banner-amount { margin: 0; font-size: 1.6rem; text-shadow: none; }
 .banner.is-stuck .banner-label { order: -1; }
 .banner.is-stuck .banner-next { display: none; }
-/* No backdrop-filter support: fall back to a solid bar so text never sits on bare content. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .banner.is-stuck { background: var(--ink); }
-  .banner.clear.is-stuck { background: var(--later); }
-  .toast { background: var(--ink); }
+  .panel, .banner, .toast { background: var(--bg-2); }
 }
 
-/* Charge date / status, on its own quiet line instead of a "·" string. */
-.charge-meta { margin: 1px 0 0; font-size: 0.9rem; color: var(--muted); font-weight: 600; }
-.charge-meta .estimated { font-weight: 600; }
+/* --- The timeline: trials as nodes on a glowing runway to their charge date --- */
+#trial-list { position: relative; display: grid; gap: 16px; margin-top: 18px; padding-left: 30px; }
+#trial-list::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(var(--teal), rgba(58, 212, 182, 0.12));
+}
+.trial-list { display: grid; gap: 14px; }
 
-/* The "saved" figure beside the Cancelled heading, as its own element (no dot join). */
-.section-summary { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.section-saved { font-weight: 700; font-size: 0.95rem; color: #0f5f2c; }
+.card {
+  position: relative;
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 17px 20px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+}
+#trial-list > .card::before {
+  content: "";
+  position: absolute;
+  left: -29px;
+  top: 24px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 3px solid var(--node, var(--teal));
+  box-shadow: 0 0 0 4px rgba(11, 23, 21, 0.9), 0 0 16px var(--node, var(--teal));
+}
+.card-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.service { margin: 0; font-family: "Fraunces", serif; font-size: 1.3rem; font-weight: 600; min-width: 0; letter-spacing: -0.01em; }
+.badge {
+  font-size: 0.74rem; font-weight: 800; padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+  background: rgba(237, 243, 240, 0.08); color: var(--muted); border: 1px solid var(--line);
+}
+.countdown { margin: 8px 0 0; font-size: 1.05rem; color: var(--ink); }
+.countdown strong { font-weight: 800; }
+.charge-meta { margin: 2px 0 0; font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+.charge-meta .estimated, .estimated { font-size: 0.85rem; color: var(--faint); font-weight: 600; }
+.price { margin: 6px 0 0; color: var(--muted); font-weight: 600; }
+.not-found { color: var(--faint); font-style: italic; }
 
-/* The next charge is the star: give the soonest card a touch more presence. */
-.trial-list > .card.urgency-soon { box-shadow: 0 1px 2px rgba(40, 30, 20, 0.05), 0 12px 30px rgba(220, 38, 38, 0.1); }
+/* Urgency shows on the node and the countdown, not as yet another coloured card border. */
+.urgency-soon { --node: var(--coral); }
+.urgency-soon .countdown strong { color: var(--coral); }
+.urgency-soon .badge { background: rgba(255, 125, 92, 0.16); color: #ffb09a; border-color: rgba(255, 125, 92, 0.3); }
+.urgency-month { --node: var(--amber); }
+.urgency-month .countdown strong { color: var(--amber); }
+.urgency-month .badge { background: rgba(255, 182, 94, 0.15); color: #ffcf9a; border-color: rgba(255, 182, 94, 0.3); }
+.urgency-later { --node: var(--safe); }
+.urgency-later .badge { background: rgba(103, 226, 166, 0.14); color: #a6edc9; border-color: rgba(103, 226, 166, 0.28); }
+.urgency-past, .urgency-none { --node: var(--faint); }
+.urgency-past .service, .urgency-past .countdown { color: var(--muted); }
 
-@keyframes card-rise {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: none; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: flex-start; }
+.menu { position: relative; }
+.menu > summary {
+  list-style: none;
+  background: rgba(58, 212, 182, 0.12);
+  color: var(--teal);
+  display: inline-block;
+  user-select: none;
+}
+.menu > summary::-webkit-details-marker { display: none; }
+.menu[open] > summary { background: rgba(58, 212, 182, 0.2); }
+.menu-options {
+  position: absolute;
+  z-index: 9;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 232px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  display: grid;
+}
+.menu-option {
+  font: inherit; font-weight: 700; text-align: left; color: var(--ink);
+  background: none; border: 0; border-radius: 9px; padding: 9px 12px; cursor: pointer;
+  text-decoration: none; white-space: nowrap;
+}
+.menu-option:hover { background: rgba(58, 212, 182, 0.14); }
+
+.cancel-body {
+  margin-top: 12px;
+  background: rgba(6, 15, 13, 0.5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 15px;
+}
+.cancel-body p { margin: 0 0 8px; }
+.cancel-steps { margin: 0 0 10px; padding-left: 1.2em; }
+.cancel-steps li { margin: 3px 0; overflow-wrap: anywhere; }
+a.button { display: inline-block; text-decoration: none; }
+
+.card-labels { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.remove-button {
+  font: inherit; font-size: 1.3rem; line-height: 1; width: 32px; height: 32px;
+  border-radius: 50%; border: 0; background: none; color: var(--faint); cursor: pointer;
+}
+.remove-button:hover { background: rgba(237, 243, 240, 0.08); color: var(--ink); }
+.remove-button:focus-visible, .link-button:focus-visible, .toast-undo:focus-visible {
+  outline: 2px solid var(--teal); outline-offset: 2px;
 }
 
-/* Motion only for people who haven't asked for less of it. */
+/* --- Cancelled: a quiet, dimmed shelf below the live timeline --- */
+.cancelled-section { margin-top: 34px; }
+.section-summary { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; cursor: pointer; padding: 6px 0; }
+.section-title { font-family: "Fraunces", serif; display: inline; font-size: 1.15rem; margin: 0; color: var(--muted); font-weight: 600; }
+.section-saved { font-weight: 700; font-size: 0.95rem; color: var(--safe); }
+#cancelled-list { padding-left: 0; }
+#cancelled-list::before { display: none; }
+.card.cancelled { opacity: 0.72; box-shadow: none; }
+.card.cancelled .service { color: var(--faint); text-decoration: line-through; text-decoration-thickness: 2px; }
+.card.cancelled .badge { background: rgba(103, 226, 166, 0.14); color: #a6edc9; border-color: rgba(103, 226, 166, 0.28); }
+
+.list-footer { margin-top: 22px; text-align: center; }
+.trial-list:focus { outline: none; }
+.link-button {
+  font: inherit; font-weight: 700; background: none; border: 0; color: var(--faint);
+  text-decoration: underline; cursor: pointer; padding: 6px 10px; border-radius: 8px;
+}
+.link-button:hover { color: var(--coral); }
+
+.footer { max-width: 760px; margin: 0 auto; padding: 10px 20px 96px; text-align: center; font-size: 0.85rem; color: var(--faint); }
+.footer p { margin: 2px 0; }
+
+/* --- Toast: frosted, floating over the timeline --- */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px);
+  width: max-content; max-width: calc(100% - 32px);
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 15px 13px 20px; border-radius: 14px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--line-strong);
+  color: var(--ink); font-weight: 600;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+  opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 10;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.toast-text { min-width: 0; overflow-wrap: anywhere; }
+.toast-undo {
+  font: inherit; font-weight: 800; background: var(--teal); color: #042a25;
+  border: 0; border-radius: 999px; padding: 7px 15px; cursor: pointer;
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* --- Motion only where it answers an action, and only if it's welcome --- */
+@keyframes card-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: no-preference) {
-  .trial-list .card.card--enter {
-    animation: card-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: var(--enter-delay, 0ms);
-  }
+  .trial-list .card.card--enter { animation: card-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--enter-delay, 0ms); }
 }
 @media (prefers-reduced-motion: no-preference) and (hover: hover) {
-  .card { transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease; }
-  .trial-list > .card:hover { transform: translateY(-2px); }
+  .card { transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease, border-color 0.18s ease; }
+  #trial-list > .card:hover { transform: translateY(-2px); border-color: var(--line-strong); }
   .button:not(:disabled):hover { transform: translateY(-1px); }
 }
-
-/* Reduced motion: no bar transition, no entrance, nothing moves on hover. */
 @media (prefers-reduced-motion: reduce) {
   .banner, .card, .button { transition: none; }
   .trial-list .card.card--enter { animation: none; opacity: 1; transform: none; }
+}
+
+/* Forced-colors (Windows contrast themes): glass drops out, so keep clear edges. */
+@media (forced-colors: active) {
+  .panel, .card, .banner, .toast, .menu-options { border: 1px solid CanvasText; }
+  .toast-undo, .button.primary { border: 1px solid ButtonText; }
+}
+
+@media (max-width: 560px) {
+  .hero { padding: 48px 0 20px; }
+  .panel { padding: 18px; }
+  .banner { padding: 18px 18px; }
+  .banner.is-stuck { padding: 11px 16px; }
+  .toast { bottom: 16px; width: calc(100% - 32px); justify-content: space-between; }
 }
