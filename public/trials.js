@@ -2,12 +2,25 @@
 
 const FILLER_WORDS = new Set(['the', 'a', 'an', 'your', 'my']);
 
-// Two cards are the same trial when the service's main word and the charge date match,
-// so "StreamBox" and "Streambox Plus" on the same day count as one.
+// The service name in lowercase without filler words, spaces or symbols:
+// "The StreamBox Plus" becomes "streamboxplus".
+function nameKey(service) {
+  return String(service).toLowerCase().split(/[^\p{L}\p{M}\p{N}]+/u).filter((word) => word && !FILLER_WORDS.has(word)).join('');
+}
+
+// A short id for a trial card, made from its name and charge date.
 export function trialKey(service, chargeDate) {
-  const words = String(service).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-  const mainWord = words.find((word) => !FILLER_WORDS.has(word)) ?? 'trial';
-  return `${mainWord}-${chargeDate ?? 'nodate'}`;
+  return `${nameKey(service) || 'trial'}-${chargeDate ?? 'nodate'}`;
+}
+
+// Two cards are the same trial when the charge dates match and one name starts with the other,
+// so "StreamBox" and "Streambox Plus" on the same day count as one, but "Nova Music" and "Nova Fitness" don't.
+export function sameTrial(a, b) {
+  if ((a.chargeDate ?? null) !== (b.chargeDate ?? null)) return false;
+  const first = nameKey(a.service);
+  const second = nameKey(b.service);
+  if (!first || !second) return first === second;
+  return first.startsWith(second) || second.startsWith(first);
 }
 
 // Only plain web links are ever shown as buttons.

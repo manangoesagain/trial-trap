@@ -4,8 +4,8 @@
 import { buildIcs, googleCalendarUrl, icsFileName } from './calendar.js';
 import { countdownText, daysBetween, formatDate, todayISO, urgency } from './dates.js';
 import { sampleEmails } from './samples.js';
-import { loadTrials, mergeTrials, saveTrials } from './storage.js';
-import { formatMoney, formatTotals, sortTrials, summarize } from './trials.js';
+import { STORAGE_KEY, loadTrials, mergeTrials, saveTrials } from './storage.js';
+import { formatMoney, formatTotals, sameTrial, sortTrials, summarize } from './trials.js';
 
 const emailText = document.querySelector('#email-text');
 const findButton = document.querySelector('#find-button');
@@ -38,6 +38,16 @@ function element(tag, className, text) {
   if (className) node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
+}
+
+// Runs a button's action once per click. The second click of a double-click is ignored:
+// by then the list has been redrawn and the next card's button sits under the pointer.
+// The action is told whether the keyboard pressed the button (a click with detail 0).
+function onClick(button, action) {
+  button.addEventListener('click', (event) => {
+    if (event.detail > 1) return;
+    action(event.detail === 0);
+  });
 }
 
 function showMessage(text, isError = false) {
@@ -82,9 +92,10 @@ function startToastTimer() {
   toastTimer = setTimeout(hideToast, TOAST_SECONDS * 1000);
 }
 
-// The card you clicked on was just redrawn, so put keyboard focus somewhere sensible.
-function focusAfterChange() {
-  if (!toastUndo.hidden) toastUndo.focus({ preventScroll: true });
+// The card that was used has just been redrawn, so put focus somewhere sensible.
+// Keyboard users land on Undo in the note, so they can take it straight back.
+function focusAfterChange(fromKeyboard = false) {
+  if (fromKeyboard && !toastUndo.hidden) toastUndo.focus({ preventScroll: true });
   else if (!document.activeElement || document.activeElement === document.body) trialList.focus({ preventScroll: true });
 }
 
@@ -92,7 +103,7 @@ function findTrial(id) {
   return trials.find((trial) => trial.id === id);
 }
 
-function markCancelled(id) {
+function markCancelled(id, fromKeyboard) {
   const trial = findTrial(id);
   if (!trial) return;
   trial.status = 'cancelled';
@@ -102,7 +113,7 @@ function markCancelled(id) {
   render();
   const saved = trial.price === null || !trial.cancelledInTime ? '' : ` That's ${formatMoney(trial.price, trial.currency)} saved.`;
   showToast(`Nice! ${trial.service} is marked as cancelled.${saved}`, () => markActive(id));
-  focusAfterChange();
+  focusAfterChange(fromKeyboard);
 }
 
 function markActive(id) {
@@ -115,19 +126,19 @@ function markActive(id) {
   focusAfterChange();
 }
 
-function removeTrial(id) {
+function removeTrial(id, fromKeyboard) {
   const index = trials.findIndex((trial) => trial.id === id);
   if (index === -1) return;
   const [removed] = trials.splice(index, 1);
   persist();
   render();
   showToast(`Removed ${removed.service}.`, () => {
-    if (!findTrial(removed.id)) trials.splice(Math.min(index, trials.length), 0, removed);
+    if (!trials.some((trial) => sameTrial(trial, removed))) trials.splice(Math.min(index, trials.length), 0, removed);
     persist();
     render();
     hideToast();
   });
-  focusAfterChange();
+  focusAfterChange(fromKeyboard);
 }
 
 function clearAll() {
@@ -147,7 +158,7 @@ function removeButton(trial) {
   button.type = 'button';
   button.title = 'Remove (if it was read wrongly)';
   button.setAttribute('aria-label', `Remove ${trial.service}`);
-  button.addEventListener('click', () => removeTrial(trial.id));
+  onClick(button, (fromKeyboard) => removeTrial(trial.id, fromKeyboard));
   return button;
 }
 
@@ -193,7 +204,7 @@ function renderCard(trial, today) {
   const cancelledButton = element('button', 'button primary small', 'I cancelled it ✓');
   cancelledButton.type = 'button';
   cancelledButton.setAttribute('aria-label', `I cancelled ${trial.service}`);
-  cancelledButton.addEventListener('click', () => markCancelled(trial.id));
+  onClick(cancelledButton, (fromKeyboard) => markCancelled(trial.id, fromKeyboard));
   actions.append(cancelInfo.button, cancelledButton);
 
   card.append(top, countdown, priceLine, actions, cancelInfo.body);
@@ -218,7 +229,7 @@ function renderCancelledCard(trial) {
   const undo = element('button', 'button soft small', 'Undo');
   undo.type = 'button';
   undo.setAttribute('aria-label', `Undo: ${trial.service} isn't cancelled yet`);
-  undo.addEventListener('click', () => markActive(trial.id));
+  onClick(undo, () => markActive(trial.id));
   actions.append(undo);
 
   card.append(top, note, actions);
@@ -331,6 +342,20 @@ function render() {
   listFooter.hidden = !trials.length;
 }
 
+// Sends the pasted text to the helper server. Returns null if the server couldn't be reached.
+async function askServer(text) {
+  try {
+    const response = await fetch('/api/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, today: todayISO() }),
+    });
+    return { ok: response.ok, result: await response.json() };
+  } catch {
+    return null;
+  }
+}
+
 async function findTrials() {
   const text = emailText.value;
   if (!text.trim()) {
@@ -341,13 +366,13 @@ async function findTrials() {
   findButton.textContent = 'Reading your emails…';
   showMessage('');
   try {
-    const response = await fetch('/api/extract', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, today: todayISO() }),
-    });
-    const result = await response.json();
-    if (!response.ok) {
+    const reply = await askServer(text);
+    if (!reply) {
+      showMessage("Couldn't reach Trial Trap. Is the server still running?", true);
+      return;
+    }
+    const { ok, result } = reply;
+    if (!ok) {
       showMessage(result.error, true);
       return;
     }
@@ -369,8 +394,6 @@ async function findTrials() {
     else if (merged.alreadySaved) summary = `Found ${found} trials: ${merged.added} new, ${merged.alreadySaved} already on your list.`;
     else summary = `Found ${found} trial${found === 1 ? '' : 's'}.`;
     showMessage(`${summary}${skipped}${note}${saved ? '' : ` ${STORAGE_WARNING}`}`, !saved);
-  } catch {
-    showMessage("Couldn't reach Trial Trap. Is the server still running?", true);
   } finally {
     findButton.disabled = false;
     findButton.textContent = 'Find my trials';
@@ -391,9 +414,11 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-// Keep the Undo note on screen while someone is pointing at it or tabbed into it.
+// Keep the Undo note on screen while someone is pointing at it or has tabbed into it.
 toast.addEventListener('mouseenter', () => clearTimeout(toastTimer));
-toast.addEventListener('focusin', () => clearTimeout(toastTimer));
+toast.addEventListener('focusin', (event) => {
+  if (event.target.matches(':focus-visible')) clearTimeout(toastTimer);
+});
 toast.addEventListener('mouseleave', () => { if (toast.classList.contains('show')) startToastTimer(); });
 toast.addEventListener('focusout', () => { if (toast.classList.contains('show')) startToastTimer(); });
 
@@ -410,9 +435,16 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('focus', redrawIfNewDay);
 setInterval(redrawIfNewDay, 60 * 1000);
 
+// Another tab saved changes: show them here too, so two tabs never undo each other's work.
+window.addEventListener('storage', (event) => {
+  if (event.key !== STORAGE_KEY && event.key !== null) return;
+  trials = loadTrials();
+  render();
+});
+
 findButton.addEventListener('click', findTrials);
 clearButton.addEventListener('click', clearAll);
-toastUndo.addEventListener('click', () => toastUndoAction?.());
+onClick(toastUndo, () => toastUndoAction?.());
 sampleButton.addEventListener('click', () => {
   emailText.value = sampleEmails(todayISO());
   emailText.setSelectionRange(0, 0);

@@ -83,7 +83,14 @@ if (startedDirectly) {
   const port = Number(settings.PORT) || 3000;
 
   // Only this computer can open the app, so nobody else on the Wi-Fi can use your NVIDIA key.
-  const server = createApp({ ai }).listen(port, '127.0.0.1', () => {
+  createApp({ ai }).listen(port, '127.0.0.1', (error) => {
+    if (error) {
+      console.error(error.code === 'EADDRINUSE'
+        ? `Port ${port} is already in use. Is Trial Trap already running in another window? Close it, or add PORT=${port + 1} to .env.`
+        : `Trial Trap couldn't start: ${error.message}`);
+      process.exitCode = 1;
+      return;
+    }
     console.log(`Trial Trap is running at http://localhost:${port}`);
     if (!ai) {
       console.log('Smart reading is OFF (no NVIDIA_API_KEY in .env), so the built-in reader is used.');
@@ -97,10 +104,5 @@ if (startedDirectly) {
         if (result.suggestions.length) console.warn(`Similar models you could put in AI_MODEL: ${result.suggestions.join(', ')}`);
       })
       .catch(() => console.warn("Couldn't reach NVIDIA to check the model. Smart reading will fall back to basic reading if it fails."));
-  });
-  server.on('error', (error) => {
-    if (error.code !== 'EADDRINUSE') throw error;
-    console.error(`Port ${port} is already in use. Is Trial Trap already running in another window? Close it, or add PORT=${port + 1} to .env.`);
-    process.exit(1);
   });
 }

@@ -1,7 +1,8 @@
 // Saves trials in this browser only (localStorage), so there's no login and no database.
 // If the browser blocks storage (some private windows do), the app still works for this visit.
 
-import { safeUrl, trialKey } from './trials.js';
+import { isValidISODate } from './dates.js';
+import { safeUrl, sameTrial, trialKey } from './trials.js';
 
 export const STORAGE_KEY = 'trialtrap.trials.v1';
 
@@ -16,7 +17,9 @@ function browserStorage() {
 // Saved data could be old or edited by hand, so tidy each trial before using it.
 function tidy(trial) {
   if (!trial || typeof trial !== 'object' || typeof trial.service !== 'string' || !trial.service.trim()) return null;
-  const chargeDate = typeof trial.chargeDate === 'string' ? trial.chargeDate : null;
+  // Only a real date is kept: "2026-10-20T00:00:00Z" becomes "2026-10-20", anything else "No date".
+  const day = typeof trial.chargeDate === 'string' ? trial.chargeDate.slice(0, 10) : '';
+  const chargeDate = isValidISODate(day) ? day : null;
   return {
     ...trial,
     id: trialKey(trial.service, chargeDate),
@@ -34,7 +37,7 @@ export function loadTrials(storage = browserStorage()) {
     if (!Array.isArray(saved)) return [];
     const trials = [];
     for (const trial of saved.map(tidy)) {
-      if (trial && !trials.some((kept) => kept.id === trial.id)) trials.push(trial);
+      if (trial && !trials.some((kept) => sameTrial(kept, trial))) trials.push(trial);
     }
     return trials;
   } catch {
@@ -59,9 +62,8 @@ export function mergeTrials(saved, found, now = new Date().toISOString()) {
   const trials = [...saved];
   let added = 0;
   for (const trial of found) {
-    const id = trialKey(trial.service, trial.chargeDate);
-    if (trials.some((kept) => kept.id === id)) continue;
-    trials.push({ ...trial, id, status: 'active', addedAt: now });
+    if (trials.some((kept) => sameTrial(kept, trial))) continue;
+    trials.push({ ...trial, id: trialKey(trial.service, trial.chargeDate), status: 'active', addedAt: now });
     added += 1;
   }
   return { trials, added, alreadySaved: found.length - added };

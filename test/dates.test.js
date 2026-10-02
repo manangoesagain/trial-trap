@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { addDays, addMonths, countdownText, daysBetween, formatDate, isValidISODate, urgency } from '../public/dates.js';
-import { formatTotals, sortTrials, summarize, trialKey } from '../public/trials.js';
+import { formatTotals, sameTrial, sortTrials, summarize, trialKey } from '../public/trials.js';
 
 test('date maths works across months and years', () => {
   assert.equal(addDays('2026-12-30', 3), '2027-01-02');
@@ -40,8 +40,12 @@ test('banner totals only count active trials that have not charged yet', () => {
   assert.equal(formatTotals(summary.atRisk), '$38.97 + ₹199.00');
 });
 
-test('the same trial pasted twice gets the same key', () => {
-  assert.equal(trialKey('StreamBox', '2026-10-03'), trialKey('Streambox Plus', '2026-10-03'));
-  assert.equal(trialKey('The Daily Paper', null), 'daily-nodate');
-  assert.notEqual(trialKey('StreamBox', '2026-10-03'), trialKey('StreamBox', '2026-11-03'));
+test('the same trial pasted twice is recognised, different ones are kept apart', () => {
+  const card = (service, chargeDate) => ({ service, chargeDate });
+  assert.equal(sameTrial(card('StreamBox', '2026-10-03'), card('Streambox Plus', '2026-10-03')), true);
+  assert.equal(sameTrial(card('The Daily Paper', null), card('Daily Paper', null)), true);
+  assert.equal(sameTrial(card('StreamBox', '2026-10-03'), card('StreamBox', '2026-11-03')), false);
+  assert.equal(sameTrial(card('Nova Music', '2026-10-10'), card('Nova Fitness', '2026-10-10')), false);
+  assert.equal(sameTrial(card('हॉटस्टार', '2026-10-10'), card('ज़ी5', '2026-10-10')), false);
+  assert.equal(trialKey('The Daily Paper', null), 'dailypaper-nodate');
 });

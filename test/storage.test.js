@@ -67,6 +67,31 @@ test('cancelled trials count as saved money, not money at risk', () => {
   assert.equal(summary.next.service, 'MunchPass');
 });
 
+test('two services that share a first word and a date both stay on the list', () => {
+  const music = { ...munchpass, service: 'Nova Music', chargeDate: '2026-10-10', price: 5.99 };
+  const fitness = { ...munchpass, service: 'Nova Fitness', chargeDate: '2026-10-10', price: 8.99 };
+  const first = mergeTrials([], [music]);
+  const second = mergeTrials(first.trials, [fitness, music]);
+  assert.deepEqual(second.trials.map((t) => t.service), ['Nova Music', 'Nova Fitness']);
+  assert.equal(second.alreadySaved, 1);
+  assert.deepEqual(summarize(second.trials, '2026-10-01').atRisk, { USD: 14.98 });
+});
+
+test('a saved date that is not a real date never breaks the page', () => {
+  const storage = fakeStorage({
+    [STORAGE_KEY]: JSON.stringify([
+      { service: 'Datebroke', chargeDate: '2026-10-20T00:00:00Z', price: 4, currency: 'USD' },
+      { service: 'Nodate', chargeDate: 'next Tuesday', price: 4, currency: 'USD' },
+      { service: 'Wrongday', chargeDate: '2026-02-30', price: 4, currency: 'USD' },
+    ]),
+  });
+  assert.deepEqual(loadTrials(storage).map((t) => [t.service, t.chargeDate]), [
+    ['Datebroke', '2026-10-20'],
+    ['Nodate', null],
+    ['Wrongday', null],
+  ]);
+});
+
 test('cancelling a trial that already charged saves nothing', () => {
   const late = { ...streambox, status: 'cancelled', cancelledInTime: false };
   assert.deepEqual(summarize([late], '2026-10-05').saved, {});

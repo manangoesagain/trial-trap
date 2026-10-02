@@ -115,11 +115,11 @@ textarea:focus { outline: none; border-color: var(--accent); }
 }
 .banner-label { margin: 0; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.8rem; font-weight: 700; color: #cbd2d9; }
 .banner-amount { margin: 2px 0 4px; font-size: 2.6rem; font-weight: 800; line-height: 1.1; }
-.banner-next { margin: 0; font-size: 1.05rem; color: #e4e7eb; }
+.banner-next { margin: 0; font-size: 1.05rem; color: #e4e7eb; overflow-wrap: anywhere; }
 .banner.clear { background: var(--later); }
 .banner.clear .banner-label, .banner.clear .banner-next { color: #e3f4e8; }
 
-.trial-list { display: grid; gap: 14px; margin-top: 16px; }
+.trial-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin-top: 16px; }
 
 .card {
   background: var(--surface);
@@ -127,9 +127,12 @@ textarea:focus { outline: none; border-color: var(--accent); }
   box-shadow: var(--shadow);
   padding: 16px 20px;
   border-left: 8px solid var(--line);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
-.card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.service { margin: 0; font-size: 1.25rem; font-weight: 800; min-width: 0; overflow-wrap: anywhere; }
+/* On a narrow phone the badge and × drop below a long name instead of splitting it mid-word. */
+.card-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.service { margin: 0; font-size: 1.25rem; font-weight: 800; min-width: 0; }
 .badge { font-size: 0.8rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
 .countdown { margin: 6px 0 0; font-size: 1.05rem; }
 .countdown strong { font-weight: 800; }
@@ -200,7 +203,7 @@ textarea:focus { outline: none; border-color: var(--accent); }
 .cancel-steps li { margin: 2px 0; }
 a.button { display: inline-block; text-decoration: none; }
 
-.card-labels { display: flex; align-items: center; gap: 6px; }
+.card-labels { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .remove-button {
   font: inherit;
   font-size: 1.3rem;
@@ -282,6 +285,7 @@ a.button { display: inline-block; text-decoration: none; }
   padding: 6px 14px;
   cursor: pointer;
 }
+.toast-text { min-width: 0; overflow-wrap: anywhere; }
 
 .visually-hidden {
   position: absolute;

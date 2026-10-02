@@ -120,3 +120,8 @@ test('cancel links and steps point at what actually cancels', () => {
   const warning = 'From: Bramble <billing@bramble.example>\nSubject: Your free trial has started\n\nYour free trial ends on October 20, 2026. If you do not cancel before then, your account will be charged $7.99/month.\nTo cancel, go to Settings > Plan.';
   assert.deepEqual(read(warning).trials[0].cancelSteps, ['To cancel, go to Settings > Plan.']);
 });
+
+test('two services that share a first word and a date are both found', () => {
+  const paste = 'From: Nova Music <hello@novamusic.example>\nWelcome to Nova Music! Your free trial ends on October 10, 2026. After that you will be charged $5.99/month.\n---\nFrom: Nova Fitness <hello@novafitness.example>\nWelcome to Nova Fitness! Your free trial ends on October 10, 2026. After that you will be charged $8.99/month.';
+  assert.deepEqual(read(paste).trials.map((t) => [t.service, t.price]), [['Nova Music', 5.99], ['Nova Fitness', 8.99]]);
+});
