@@ -16,7 +16,7 @@
   --past: #6b7280;
   --past-soft: #f0f1f3;
   --radius: 16px;
-  --shadow: 0 1px 2px rgba(31, 41, 51, 0.06), 0 6px 20px rgba(31, 41, 51, 0.06);
+  --shadow: 0 1px 2px rgba(40, 30, 20, 0.05), 0 8px 24px rgba(40, 30, 20, 0.07);
   font-family: "Nunito", ui-rounded, "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--ink);
   background: var(--background);
@@ -37,7 +37,7 @@ body {
 }
 
 .header { text-align: center; margin-bottom: 20px; }
-.logo { font-size: 2.4rem; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+.logo { font-family: "Fraunces", Georgia, "Times New Roman", serif; font-size: 2.6rem; font-weight: 600; margin: 0; letter-spacing: -0.015em; }
 .tagline { font-size: 1.15rem; color: var(--muted); margin: 4px 0 0; }
 
 .steps {
@@ -108,15 +108,19 @@ textarea:focus { outline: none; border-color: var(--accent); }
 .privacy { margin: 6px 0 0; font-size: 0.85rem; color: var(--muted); }
 
 .banner {
+  position: sticky;
+  top: 0;
+  z-index: 8;
   margin: 24px 0 8px;
   padding: 20px 24px;
   border-radius: var(--radius);
   background: var(--ink);
   color: #fff;
   box-shadow: var(--shadow);
+  transition: padding 0.25s ease, border-radius 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
-.banner-label { margin: 0; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.8rem; font-weight: 700; color: #cbd2d9; }
-.banner-amount { margin: 2px 0 4px; font-size: 2.6rem; font-weight: 800; line-height: 1.1; }
+.banner-label { margin: 0; letter-spacing: 0.01em; font-size: 0.85rem; font-weight: 700; color: #cbd2d9; }
+.banner-amount { margin: 2px 0 4px; font-family: "Fraunces", Georgia, serif; font-size: 2.7rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.01em; }
 .banner-next { margin: 0; font-size: 1.05rem; color: #e4e7eb; overflow-wrap: anywhere; }
 .banner.clear { background: var(--later); }
 .banner.clear .banner-label, .banner.clear .banner-next { color: #fff; }
@@ -268,10 +272,12 @@ a.button { display: inline-block; text-decoration: none; }
   gap: 14px;
   padding: 12px 14px 12px 20px;
   border-radius: 14px;
-  background: var(--ink);
+  background: rgba(31, 41, 51, 0.86);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 10px 30px rgba(31, 41, 51, 0.25);
+  box-shadow: 0 12px 34px rgba(40, 30, 20, 0.28);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s, transform 0.2s;
@@ -315,4 +321,84 @@ a.button { display: inline-block; text-decoration: none; }
   .banner-amount { font-size: 2.1rem; }
   .actions .button { flex: 1 1 auto; }
   .toast { bottom: 16px; width: calc(100% - 32px); justify-content: space-between; }
+}
+
+/* --- Design-elevation pass: a faint hero texture, a sticky condensing alert bar,
+   one point-of-view serif, and motion only where it answers an action. --- */
+
+/* A faint warm grid behind the hero gives a crafted feel and something for the
+   frosted bar to pass over. Kept very low-contrast so it never competes with text. */
+.header { position: relative; isolation: isolate; overflow: hidden; }
+.header::before {
+  content: "";
+  position: absolute;
+  inset: -28px 0 -8px;
+  z-index: -1;
+  background-image: radial-gradient(rgba(15, 118, 110, 0.06) 1.1px, transparent 1.2px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(130% 100% at 50% 0, #000 40%, transparent 78%);
+  mask-image: radial-gradient(130% 100% at 50% 0, #000 40%, transparent 78%);
+  pointer-events: none;
+}
+
+/* The sentinel sits just above the bar; the script flips .is-stuck when it passes the top. */
+#banner-sentinel { height: 1px; margin: 0; }
+
+/* Condensed state: a slim frosted strip that keeps the number and label in view. */
+.banner.is-stuck {
+  display: flex;
+  align-items: baseline;
+  gap: 6px 16px;
+  flex-wrap: wrap;
+  padding: 10px 20px;
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: rgba(31, 41, 51, 0.82);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow: 0 10px 30px rgba(40, 30, 20, 0.18);
+}
+.banner.clear.is-stuck { background: rgba(21, 128, 61, 0.86); }
+.banner.is-stuck .banner-amount { margin: 0; font-size: 1.55rem; }
+.banner.is-stuck .banner-label { order: -1; }
+.banner.is-stuck .banner-next { display: none; }
+/* No backdrop-filter support: fall back to a solid bar so text never sits on bare content. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .banner.is-stuck { background: var(--ink); }
+  .banner.clear.is-stuck { background: var(--later); }
+  .toast { background: var(--ink); }
+}
+
+/* Charge date / status, on its own quiet line instead of a "·" string. */
+.charge-meta { margin: 1px 0 0; font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+.charge-meta .estimated { font-weight: 600; }
+
+/* The "saved" figure beside the Cancelled heading, as its own element (no dot join). */
+.section-summary { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.section-saved { font-weight: 700; font-size: 0.95rem; color: #0f5f2c; }
+
+/* The next charge is the star: give the soonest card a touch more presence. */
+.trial-list > .card.urgency-soon { box-shadow: 0 1px 2px rgba(40, 30, 20, 0.05), 0 12px 30px rgba(220, 38, 38, 0.1); }
+
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Motion only for people who haven't asked for less of it. */
+@media (prefers-reduced-motion: no-preference) {
+  .trial-list .card.card--enter {
+    animation: card-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .card { transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease; }
+  .trial-list > .card:hover { transform: translateY(-2px); }
+  .button:not(:disabled):hover { transform: translateY(-1px); }
+}
+
+/* Reduced motion: no bar transition, no entrance, nothing moves on hover. */
+@media (prefers-reduced-motion: reduce) {
+  .banner, .card, .button { transition: none; }
+  .trial-list .card.card--enter { animation: none; opacity: 1; transform: none; }
 }

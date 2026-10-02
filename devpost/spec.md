@@ -179,3 +179,7 @@ No database, no hosting, no other services.
 ## 1-click Gmail button (optional)
 
 `public/connect.html` offers a bookmarklet the user drags to their bookmarks bar. While reading an email in Gmail it reads the open message (sender, subject and body from Gmail's `.gs`/`.gD`/`.a3s`/`h2.hP` elements), base64-encodes it and opens `http://localhost:3000/#import=...`. On load and on `hashchange`, `app.js` decodes the text, clears the hash, and runs it through the same reader as a paste, so it's shown as plain text and nothing new is trusted. No credentials, no sign-in; the email only goes from the Gmail tab to the local app.
+
+## Visual design pass
+
+Keeps the warm cream + teal identity but adds a point of view: Fraunces (a humanist serif) for the "Trial Trap" wordmark and the money-at-risk figure, Nunito for everything else. The money-at-risk bar is `position: sticky` and condenses into a slim frosted strip (the one place `backdrop-filter` glass is used, since cards scroll behind it) via a scroll handler that toggles `.is-stuck`. Found cards rise in once on a Find (not on every re-render). All motion sits behind `prefers-reduced-motion`, the frosted bar keeps a solid-enough scrim for contrast, and there is a `backdrop-filter`-less fallback.

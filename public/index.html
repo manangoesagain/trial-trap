@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪤</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -38,6 +38,7 @@
 
     <h2 id="trials-title" class="visually-hidden" hidden>Your trials</h2>
 
+    <div id="banner-sentinel" aria-hidden="true"></div>
     <section id="banner" class="banner" aria-live="polite" aria-atomic="true" hidden>
       <p class="banner-label" id="banner-label">Money at risk</p>
       <p class="banner-amount" id="banner-amount"></p>
@@ -47,7 +48,7 @@
     <section id="trial-list" class="trial-list" aria-labelledby="trials-title" tabindex="-1"></section>
 
     <details id="cancelled-section" class="cancelled-section" hidden>
-      <summary class="section-summary"><h2 id="cancelled-title" class="section-title"></h2></summary>
+      <summary class="section-summary"><h2 id="cancelled-title" class="section-title"></h2><span id="cancelled-saved" class="section-saved"></span></summary>
       <div id="cancelled-list" class="trial-list"></div>
     </details>
 

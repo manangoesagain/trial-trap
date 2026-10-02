@@ -19,6 +19,8 @@ const bannerAmount = document.querySelector('#banner-amount');
 const bannerNext = document.querySelector('#banner-next');
 const cancelledSection = document.querySelector('#cancelled-section');
 const cancelledTitle = document.querySelector('#cancelled-title');
+const cancelledSaved = document.querySelector('#cancelled-saved');
+const bannerSentinel = document.querySelector('#banner-sentinel');
 const cancelledList = document.querySelector('#cancelled-list');
 const listFooter = document.querySelector('#list-footer');
 const clearButton = document.querySelector('#clear-button');
@@ -192,13 +194,17 @@ function renderCard(trial, today) {
   top.append(element('h3', 'service', trial.service), labels);
 
   const countdown = element('p', 'countdown');
+  const meta = element('p', 'charge-meta');
   if (days === null) {
-    countdown.append(element('strong', null, 'No date found'), ' · ', element('span', 'not-found', 'Date not in email'));
+    countdown.append(element('strong', null, 'No date found'));
+    meta.append(element('span', 'not-found', 'No date in the email'));
   } else if (days < 0) {
-    countdown.append(element('strong', null, `Charged ${formatDate(trial.chargeDate)}`), ', check your bank');
+    countdown.append(element('strong', null, countdownText(days).replace(/^./, (c) => c.toUpperCase())));
+    meta.append(`Was due ${formatDate(trial.chargeDate)}. Check your bank.`);
   } else {
-    countdown.append('Charges ', element('strong', null, countdownText(days)), ` · ${formatDate(trial.chargeDate)}`);
-    if (trial.dateIsEstimated) countdown.append(' ', element('span', 'estimated', '(estimated)'));
+    countdown.append('Charges ', element('strong', null, countdownText(days)));
+    meta.append(formatDate(trial.chargeDate));
+    if (trial.dateIsEstimated) meta.append(' ', element('span', 'estimated', '(estimated)'));
   }
 
   const price = priceText(trial);
@@ -215,7 +221,7 @@ function renderCard(trial, today) {
   onClick(cancelledButton, (fromKeyboard) => markCancelled(trial.id, fromKeyboard));
   actions.append(cancelInfo.button, cancelledButton);
 
-  card.append(top, countdown, priceLine, actions, cancelInfo.body);
+  card.append(top, countdown, meta, priceLine, actions, cancelInfo.body);
   return card;
 }
 
@@ -304,7 +310,7 @@ function renderCancelInfo(trial) {
     body.append(element('p', 'not-found', `The email didn't say how to cancel. Look under Account or Subscription settings on ${trial.service}'s website.`));
   }
   if (trial.cancelUrl) {
-    const link = element('a', 'button primary small', 'Open cancel page ↗');
+    const link = element('a', 'button primary small', 'Open cancel page');
     link.href = trial.cancelUrl;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
@@ -350,8 +356,8 @@ function render() {
 
   cancelledSection.hidden = !cancelled.length;
   const { saved } = summarize(trials, today);
-  const savedText = Object.keys(saved).length ? ` · ${formatTotals(saved)} saved` : '';
-  setText(cancelledTitle, `Cancelled (${cancelled.length})${savedText}`);
+  setText(cancelledTitle, `Cancelled (${cancelled.length})`);
+  setText(cancelledSaved, Object.keys(saved).length ? `${formatTotals(saved)} saved` : '');
   cancelledList.replaceChildren(...sortTrials(cancelled).map(renderCancelledCard));
 
   listFooter.hidden = !trials.length;
@@ -403,6 +409,7 @@ async function findTrials() {
     trials = merged.trials;
     const saved = persist();
     render();
+    playEntrance();
     const found = result.trials.length;
     let summary;
     if (!merged.added) summary = found === 1 ? 'That trial is already on your list.' : 'Those trials are already on your list.';
@@ -465,6 +472,20 @@ window.addEventListener('storage', (event) => {
   render();
 });
 
+// A short, once-only rise for the cards when a Find brings back results.
+// It answers the click; it is not scroll decoration, and reduced motion skips it.
+function playEntrance() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  trialList.querySelectorAll('.card').forEach((card, index) => {
+    card.style.setProperty('--enter-delay', `${Math.min(index, 8) * 55}ms`);
+    card.classList.add('card--enter');
+    card.addEventListener('animationend', () => {
+      card.classList.remove('card--enter');
+      card.style.removeProperty('--enter-delay');
+    }, { once: true });
+  });
+}
+
 // The one-click Gmail button opens the app with an email packed into the URL (#import=...).
 // It's the same text you'd paste, so it goes through the same reader and is shown as plain text.
 function importFromUrl() {
@@ -494,6 +515,22 @@ sampleButton.addEventListener('click', () => {
   emailText.focus();
   emailText.scrollTop = 0;
 });
+
+// Pin the money-at-risk bar to the top and condense it once you scroll past it,
+// so the stakes stay with you while you read the trials.
+if (bannerSentinel) {
+  let ticking = false;
+  const syncStuck = () => {
+    banner.classList.toggle('is-stuck', bannerSentinel.getBoundingClientRect().top < 0);
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(syncStuck);
+  }, { passive: true });
+  syncStuck();
+}
 
 render();
 importFromUrl();
