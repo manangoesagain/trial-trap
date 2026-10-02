@@ -32,7 +32,7 @@ PRD ref: `prd.md > The Core Journey`.
 - **zod** — describes the exact shape of a trial so the AI's answer is checked automatically. https://zod.dev/
 - **Plain HTML, CSS and JavaScript** for the page — no framework and no build step, so there's less to install and less to break.
 - **Node's built-in test runner** (`node --test`) for the built-in reader, date and calendar logic, and the `/api/extract` endpoint.
-- Secret key loading uses Node's built-in `.env` support (`process.loadEnvFile`), so no extra package is needed.
+- Secret key loading uses Node's built-in `.env` parser (`util.parseEnv`), so no extra package is needed. The file is read however a Windows editor saved it (with or without a byte-order mark, or UTF-16), and its values win over the same names already set in Windows.
 
 Rationale: recommended by Claude for a team new to coding: one install command, nothing to host, and the key stays secret. *Needs the team's OK.*
 
@@ -40,7 +40,7 @@ Rationale: recommended by Claude for a team new to coding: one install command, 
 - Runs locally on Windows, macOS or Linux with Node.js 22+.
 - Setup, once: `npm install`
 - Optional smart reading: copy `.env.example` to `.env` and paste the NVIDIA key after `NVIDIA_API_KEY=`. Without it, the built-in reader is used.
-- Start: `npm start`, then open **http://localhost:3000**. The terminal prints whether smart reading is on and whether the chosen model was found.
+- Start: `npm start`, then open **http://localhost:3000**. The terminal prints whether smart reading is on, and checks with one tiny test message that the key can use the chosen model. The server only listens on this computer (`127.0.0.1`), so nobody else on the network can use the key.
 - Tests: `npm test`
 - Demo recording: record the browser at localhost:3000 (see the game plan and `6-ship`).
 - Submission needs a short demo video (public on YouTube or Vimeo) and the public GitHub repo. No deployment planned; judges may judge from the video and description alone.
@@ -64,11 +64,11 @@ Handles buttons, calls `/api/extract`, merges new trials with saved ones, sorts,
 PRD ref: `prd.md > The countdown`, `prd.md > Marking as cancelled`, `prd.md > Fixing mistakes`, `prd.md > States and Boundaries`.
 
 ### Trial storage (`public/storage.js`)
-Saves and loads trials from browser `localStorage`; builds the duplicate key from a simplified service name (lowercase, letters and numbers only, first word) plus charge date.
+Saves and loads trials from browser `localStorage`; treats two trials as the same when their charge dates match and one simplified service name (lowercase, letters and numbers only, filler words like "the" dropped) starts with the other, so "StreamBox" and "Streambox Plus" merge but "Nova Music" and "Nova Fitness" stay apart. Reloads when another tab saves, so two open tabs never overwrite each other.
 PRD ref: `prd.md > Remembering trials`.
 
 ### Calendar reminders (`public/calendar.js`)
-Builds (a) a Google Calendar "create event" link with title, time and details filled in, and (b) a standard `.ics` file with a 9:00–9:15 AM event the day before the charge and a pop-up alert. Both include the cancel steps and link.
+Builds (a) a Google Calendar "create event" link with title, time and details filled in, and (b) a standard `.ics` file with a 9:00–9:15 AM event the day before the charge (or the next quarter hour, if that time has already passed today) and a pop-up alert. Both include the cancel steps and link.
 PRD ref: `prd.md > Calendar reminder`.
 
 ### Sample emails (`public/samples.js`)
@@ -80,7 +80,7 @@ Serves `public/` and offers one endpoint: `POST /api/extract` with `{ text, toda
 PRD ref: `prd.md > Finding trials in emails`.
 
 ### AI reader (`lib/aiExtract.js`)
-Sends the pasted text to the NVIDIA-hosted model (`POST https://integrate.api.nvidia.com/v1/chat/completions`, temperature 0) with instructions to: treat the email text purely as data (ignore any instructions inside it), only report free trials, never guess (unknown fields are `null`), estimate a charge date from a trial length using the email's date or today's date, count emails that weren't trials, and reply with JSON only. It asks NVIDIA to enforce the JSON shape (`nvext.guided_json`) and retries once without that option if the model doesn't support it. The reply is cleaned (code fences and any "thinking" text removed), parsed, and checked against the zod schema. Anything that fails — no key, error, rate limit, 20-second timeout, or a reply that doesn't fit — falls back to the built-in reader.
+Sends the pasted text to the NVIDIA-hosted model (`POST https://integrate.api.nvidia.com/v1/chat/completions`, temperature 0) with instructions to: treat the email text purely as data (ignore any instructions inside it), only report free trials, never guess (unknown fields are `null`), estimate a charge date from a trial length using the email's date or today's date, count emails that weren't trials, and reply with JSON only. It asks NVIDIA to enforce the JSON shape (`nvext.guided_json`) and retries once without that option if the model doesn't support it. The reply is cleaned (code fences and any "thinking" text removed), parsed, and checked against the zod schema; each trial's fields are then checked one by one, so a price written as text or a date in another format is tidied rather than losing the trial. If the AI found trials but none are usable, that counts as a failure too. Anything that fails — no key, error, rate limit, 20-second timeout, or a reply that doesn't fit — falls back to the built-in reader.
 PRD ref: `prd.md > Finding trials in emails`.
 
 ### Built-in reader (`lib/basicExtract.js`, `lib/splitEmails.js`)

@@ -74,11 +74,21 @@ Build order: shown to the team as the six build steps in the game plan; approved
 ## Hands-on Checkpoints
 
 - [ ] Early usable behavior explored — after slice 2, from screenshots in the project thread (the team can't run it until the GitHub repo exists)
-- [ ] Final kick-the-tires exploration and feedback completed — on the team's laptop, including a real NVIDIA key test
+- [x] Final kick-the-tires exploration and feedback completed — on the team's laptop, including a real NVIDIA key test
+  Outcome (2026-10-01): Priyansu ran it on their Windows laptop with a real NVIDIA key (smart reading on, model found), tried the sample emails, marking a trial as cancelled, removing one, refreshing, adding a calendar reminder, and pasting real trial emails. Reported: "it works, even the adding it to calendar works." No changes requested.
 
 ## Final Review
 
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
+  The team reported no problems. Claude also ran a code review from six angles (built-in reader, AI and server, dates and calendar, page behavior, accessibility and design, docs and security), reproduced each finding with a failing test or a browser run, and fixed it. 56 tests pass.
+  - [x] Built-in reader: Gmail/Outlook copies, forwarded emails, emails pasted back to back, "ends tomorrow"/"ends in 3 days", 15-Oct-2026, euro and rupee price formats, yearly billing, "trial will expire" wording, newsletters that only advertise a trial, and better service names, cancel links and cancel steps (`test/realEmails.test.js`).
+  - [x] AI answers: an odd field (price as text, a date in another format, a currency symbol) is tidied instead of losing the trial; if no trial is usable the built-in reader takes over (`test/ai.test.js`).
+  - [x] Server: listens only on this computer, reads `.env` however Windows saved it, cleans quotes and invisible characters from a pasted key, sends one tiny test message at start-up, and explains a busy port (`test/settings.test.js`).
+  - [x] Reminders and totals: a same-day reminder is never set for a time that has passed, countdowns move on after midnight, cancelling a trial that already charged isn't counted as saved, and `.ics` semicolons are escaped (`test/calendar.test.js`, `test/storage.test.js`).
+  - [x] Page behavior: a double-click acts once, two open tabs no longer overwrite each other, "Nova Music" and "Nova Fitness" on the same day stay two cards, long words and links wrap on phones, the Undo note times out after a mouse click, and a broken saved date shows "No date" instead of breaking the page (`test/storage.test.js`, `test/dates.test.js`, browser runs at 320–1280px).
+  - [x] Accessibility and design: the calendar menu closes when focus leaves it, focus returns to Find and to the calendar button, "Reading your emails…" is announced, buttons are named by their visible words, the banner only re-announces real changes, open cancel panels stay open, a "Your trials" heading, a Windows Contrast theme edge on the note, and stronger contrast on the all-clear banner, paste box, busy button and Undo focus ring (browser runs).
+  - [x] Docs and security: README, spec and PRD match the app; no key, `.env` or local paths in the repo; pasted text is never shown as HTML; unsafe links are dropped.
+  - [x] PRD gaps: the Cancelled section starts collapsed, and a card says when the email had no cancel steps.
 
 ## Code Tour and App Map
 
@@ -98,3 +108,7 @@ Activity mode:
 - Added `public/trials.js` (duplicate key, sorting, totals, money formatting) alongside `public/dates.js` — the server and the page both need these, so they live in one shared file instead of inside `storage.js` and `app.js`.
 - "How to cancel" opens a full-width panel under the card's buttons instead of a dropdown, so it never sits on top of the calendar menu; the calendar menu closes when you click elsewhere.
 - "Clear all trials" sits just under the trial list and only shows when there are trials, rather than in the page footer, so it is next to the things it removes.
+- The early checkpoint after slice 2 was folded into the final kick-the-tires: the team couldn't run the app until the GitHub App was installed after slice 4, so screenshots were shared in the thread instead and no separate feedback round happened. The early-checkpoint box stays unchecked for that reason.
+- Final review: calendar reminders for a trial charging today or tomorrow move to the next quarter hour when 9:00 AM has already passed, so the alert still goes off (the PRD said 9:00 AM the day before, which would be in the past).
+- Final review: the date reader moved into `lib/readDates.js` so the AI-answer checker can reuse it; trial fields are now checked one by one in `lib/validateTrials.js` instead of with one strict zod schema.
+- Final review: two trials count as the same only when their dates match and one full name starts with the other ("StreamBox" / "Streambox Plus"), instead of matching on the first word, which merged different services like "Nova Music" and "Nova Fitness".
