@@ -49,6 +49,7 @@ body {
   margin: 0 0 20px;
 }
 .steps li {
+  text-wrap: balance;
   background: var(--surface);
   border-radius: 12px;
   padding: 10px 12px;
@@ -72,7 +73,7 @@ textarea {
   width: 100%;
   min-height: 180px;
   resize: vertical;
-  border: 2px solid var(--line);
+  border: 2px solid #7b8794;
   border-radius: 12px;
   padding: 12px 14px;
   font: inherit;
@@ -95,7 +96,8 @@ textarea:focus { outline: none; border-color: var(--accent); }
 }
 .button:active { transform: translateY(1px); }
 .button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-.button:disabled { opacity: 0.7; cursor: progress; }
+.button:disabled { cursor: progress; }
+.button.primary:disabled { background: var(--accent-dark); }
 .button.primary { background: var(--accent); color: #fff; }
 .button.primary:hover:not(:disabled) { background: var(--accent-dark); }
 .button.secondary { background: var(--accent-soft); color: var(--accent-dark); }
@@ -117,7 +119,7 @@ textarea:focus { outline: none; border-color: var(--accent); }
 .banner-amount { margin: 2px 0 4px; font-size: 2.6rem; font-weight: 800; line-height: 1.1; }
 .banner-next { margin: 0; font-size: 1.05rem; color: #e4e7eb; overflow-wrap: anywhere; }
 .banner.clear { background: var(--later); }
-.banner.clear .banner-label, .banner.clear .banner-next { color: #e3f4e8; }
+.banner.clear .banner-label, .banner.clear .banner-next { color: #fff; }
 
 .trial-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin-top: 16px; }
 
@@ -187,6 +189,7 @@ textarea:focus { outline: none; border-color: var(--accent); }
   padding: 8px 12px;
   cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
 }
 .menu-option:hover { background: var(--accent-soft); }
 .button.soft { background: var(--accent-soft); color: var(--accent-dark); }
@@ -286,6 +289,13 @@ a.button { display: inline-block; text-decoration: none; }
   cursor: pointer;
 }
 .toast-text { min-width: 0; overflow-wrap: anywhere; }
+.toast-undo:focus-visible { outline-color: #fff; }
+
+/* Windows Contrast themes drop backgrounds, so give the note and its button an edge. */
+@media (forced-colors: active) {
+  .toast { border: 2px solid CanvasText; }
+  .toast-undo { border: 2px solid ButtonText; }
+}
 
 .visually-hidden {
   position: absolute;

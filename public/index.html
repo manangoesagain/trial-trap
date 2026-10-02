@@ -35,13 +35,15 @@
       <p class="privacy">🔒 With smart reading on, pasted text is sent to an AI model hosted by NVIDIA to find your trials. Trial Trap doesn't keep it, and your trials are saved only in this browser. Remove anything sensitive before pasting.</p>
     </section>
 
-    <section id="banner" class="banner" aria-live="polite" hidden>
+    <h2 id="trials-title" class="visually-hidden" hidden>Your trials</h2>
+
+    <section id="banner" class="banner" aria-live="polite" aria-atomic="true" hidden>
       <p class="banner-label" id="banner-label">Money at risk</p>
       <p class="banner-amount" id="banner-amount"></p>
       <p class="banner-next" id="banner-next"></p>
     </section>
 
-    <section id="trial-list" class="trial-list" aria-label="Your trials" tabindex="-1"></section>
+    <section id="trial-list" class="trial-list" aria-labelledby="trials-title" tabindex="-1"></section>
 
     <details id="cancelled-section" class="cancelled-section" hidden>
       <summary class="section-summary"><h2 id="cancelled-title" class="section-title"></h2></summary>

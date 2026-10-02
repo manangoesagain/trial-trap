@@ -12,6 +12,7 @@ const findButton = document.querySelector('#find-button');
 const sampleButton = document.querySelector('#sample-button');
 const message = document.querySelector('#message');
 const trialList = document.querySelector('#trial-list');
+const trialsTitle = document.querySelector('#trials-title');
 const banner = document.querySelector('#banner');
 const bannerLabel = document.querySelector('#banner-label');
 const bannerAmount = document.querySelector('#banner-amount');
@@ -32,6 +33,8 @@ let trials = loadTrials();
 let warnedAboutStorage = false;
 let toastTimer = null;
 let toastUndoAction = null;
+// "How to cancel" panels the user opened, so they stay open when the list is redrawn.
+const openCancelPanels = new Set();
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -48,6 +51,11 @@ function onClick(button, action) {
     if (event.detail > 1) return;
     action(event.detail === 0);
   });
+}
+
+// Only changes text that's different, so screen readers don't repeat what hasn't changed.
+function setText(node, text) {
+  if (node.textContent !== text) node.textContent = text;
 }
 
 function showMessage(text, isError = false) {
@@ -203,7 +211,7 @@ function renderCard(trial, today) {
   const cancelInfo = renderCancelInfo(trial);
   const cancelledButton = element('button', 'button primary small', 'I cancelled it ✓');
   cancelledButton.type = 'button';
-  cancelledButton.setAttribute('aria-label', `I cancelled ${trial.service}`);
+  cancelledButton.setAttribute('aria-label', `I cancelled it: ${trial.service}`);
   onClick(cancelledButton, (fromKeyboard) => markCancelled(trial.id, fromKeyboard));
   actions.append(cancelInfo.button, cancelledButton);
 
@@ -238,7 +246,10 @@ function renderCancelledCard(trial) {
 
 function renderCalendarMenu(trial, today) {
   const menu = element('details', 'menu calendar-menu');
-  const summary = element('summary', 'button small', '📅 Add to calendar');
+  const summary = element('summary', 'button small');
+  const icon = element('span', null, '📅');
+  icon.setAttribute('aria-hidden', 'true');
+  summary.append(icon, ' Add to calendar');
   const options = element('div', 'menu-options');
 
   // The reminder is worked out when clicked, so it's right even if the page was left open.
@@ -260,6 +271,7 @@ function renderCalendarMenu(trial, today) {
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     menu.open = false;
+    summary.focus();
   });
 
   options.append(google, file);
@@ -270,16 +282,18 @@ function renderCalendarMenu(trial, today) {
 function renderCancelInfo(trial) {
   const body = element('div', 'cancel-body');
   body.id = `cancel-${trial.id}`;
-  body.hidden = true;
+  body.hidden = !openCancelPanels.has(trial.id);
   // The card says up front when the email had no cancel steps or link.
   const found = trial.cancelSteps.length > 0 || Boolean(trial.cancelUrl);
   const button = element('button', 'button small soft', found ? 'How to cancel' : 'How to cancel (not in email)');
   button.type = 'button';
-  button.setAttribute('aria-expanded', 'false');
+  button.setAttribute('aria-expanded', String(!body.hidden));
   button.setAttribute('aria-controls', body.id);
   button.addEventListener('click', () => {
     body.hidden = !body.hidden;
     button.setAttribute('aria-expanded', String(!body.hidden));
+    if (body.hidden) openCancelPanels.delete(trial.id);
+    else openCancelPanels.add(trial.id);
   });
 
   if (trial.cancelSteps.length) {
@@ -311,18 +325,18 @@ function renderBanner(today) {
   if (!next) {
     const undated = trials.some((trial) => trial.status !== 'cancelled' && !trial.chargeDate);
     const savedText = Object.keys(saved).length ? ` You've saved ${formatTotals(saved)} so far.` : '';
-    bannerLabel.textContent = 'All good';
-    bannerAmount.textContent = "You're all clear 🎉";
-    bannerNext.textContent = (undated
+    setText(bannerLabel, 'All good');
+    setText(bannerAmount, "You're all clear 🎉");
+    setText(bannerNext, (undated
       ? 'No dated charges are coming up. Check any trial below that has no date.'
-      : 'No trials are about to charge you.') + savedText;
+      : 'No trials are about to charge you.') + savedText);
     return;
   }
-  bannerLabel.textContent = 'Money at risk';
-  bannerAmount.textContent = Object.keys(atRisk).length ? formatTotals(atRisk) : 'Price unknown';
+  setText(bannerLabel, 'Money at risk');
+  setText(bannerAmount, Object.keys(atRisk).length ? formatTotals(atRisk) : 'Price unknown');
   const price = next.price === null ? '' : ` ${formatMoney(next.price, next.currency)}`;
   const when = countdownText(daysBetween(today, next.chargeDate));
-  bannerNext.textContent = `Heads up! ${next.service} charges you${price} ${when} (${formatDate(next.chargeDate)}).`;
+  setText(bannerNext, `Heads up! ${next.service} charges you${price} ${when} (${formatDate(next.chargeDate)}).`);
 }
 
 function render() {
@@ -330,13 +344,14 @@ function render() {
   const active = trials.filter((trial) => trial.status !== 'cancelled');
   const cancelled = trials.filter((trial) => trial.status === 'cancelled');
 
+  trialsTitle.hidden = !trials.length;
   renderBanner(today);
   trialList.replaceChildren(...sortTrials(active).map((trial) => renderCard(trial, today)));
 
   cancelledSection.hidden = !cancelled.length;
   const { saved } = summarize(trials, today);
   const savedText = Object.keys(saved).length ? ` · ${formatTotals(saved)} saved` : '';
-  cancelledTitle.textContent = `Cancelled (${cancelled.length})${savedText}`;
+  setText(cancelledTitle, `Cancelled (${cancelled.length})${savedText}`);
   cancelledList.replaceChildren(...sortTrials(cancelled).map(renderCancelledCard));
 
   listFooter.hidden = !trials.length;
@@ -364,7 +379,7 @@ async function findTrials() {
   }
   findButton.disabled = true;
   findButton.textContent = 'Reading your emails…';
-  showMessage('');
+  showMessage('Reading your emails…');
   try {
     const reply = await askServer(text);
     if (!reply) {
@@ -397,11 +412,19 @@ async function findTrials() {
   } finally {
     findButton.disabled = false;
     findButton.textContent = 'Find my trials';
+    // Disabling the button dropped keyboard focus, so put it back.
+    if (document.activeElement === document.body) findButton.focus();
   }
 }
 
 // Close an open calendar menu when clicking anywhere else, or pressing Escape.
 document.addEventListener('click', (event) => {
+  for (const menu of document.querySelectorAll('.calendar-menu[open]')) {
+    if (!menu.contains(event.target)) menu.open = false;
+  }
+});
+// Tabbing out of an open menu closes it too, so it never covers the button you moved to.
+document.addEventListener('focusin', (event) => {
   for (const menu of document.querySelectorAll('.calendar-menu[open]')) {
     if (!menu.contains(event.target)) menu.open = false;
   }
